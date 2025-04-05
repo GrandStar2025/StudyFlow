@@ -7,144 +7,12 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     <link rel="stylesheet" href="styles.css">
-    <style>
-        .settings-container {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 2rem;
-            background: var(--card-bg);
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(var(--primary-rgb), 0.1);
-        }
-
-        .settings-section {
-            margin-bottom: 2rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid rgba(var(--primary-rgb), 0.1);
-        }
-
-        .settings-section:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-
-        .settings-title {
-            font-size: 1.75rem;
-            color: var(--text-color);
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .settings-subtitle {
-            font-size: 1.25rem;
-            color: var(--text-color);
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid rgba(var(--primary-rgb), 0.1);
-        }
-
-        .setting-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1rem;
-            background: rgba(var(--primary-rgb), 0.05);
-            border-radius: 12px;
-            margin-bottom: 1rem;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-
-        .setting-item:hover {
-            transform: translateX(5px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .setting-info {
-            flex-grow: 1;
-        }
-
-        .setting-label {
-            font-weight: 500;
-            color: var(--text-color);
-            margin-bottom: 0.25rem;
-        }
-
-        .setting-description {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            margin: 0;
-        }
-
-        .setting-control {
-            margin-left: 1rem;
-        }
-
-        .form-switch {
-            padding-left: 2.5rem;
-        }
-
-        .form-switch .form-check-input {
-            width: 3rem;
-            height: 1.5rem;
-            margin-left: -2.5rem;
-        }
-
-        .form-select {
-            background-color: var(--card-bg);
-            color: var(--text-color);
-            border-color: rgba(var(--primary-rgb), 0.2);
-        }
-
-        .form-select:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.25rem rgba(var(--primary-rgb), 0.25);
-        }
-
-        .color-picker {
-            width: 50px;
-            height: 30px;
-            padding: 0;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        .color-picker::-webkit-color-swatch-wrapper {
-            padding: 0;
-        }
-
-        .color-picker::-webkit-color-swatch {
-            border: none;
-            border-radius: 6px;
-        }
-
-        .btn-save {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            border: none;
-            padding: 0.75rem 2rem;
-            border-radius: 8px;
-            font-weight: 500;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-
-        .btn-save:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.3);
-        }
-    </style>
 </head>
 <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg">
         <div class="container">
             <a class="navbar-brand" href="index.html">
-                <i class="bi bi-book-half"></i> Study Flow
+                <i class="bi bi-book-half me-2"></i>Study Flow
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -152,20 +20,30 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="index.html">Home</a>
+                        <a class="nav-link" href="index.html">
+                            <i class="bi bi-house-door me-1"></i>Home
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="notes.html">Notes</a>
+                        <a class="nav-link" href="history.html">
+                            <i class="bi bi-clock-history me-1"></i>Watch History
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="tasks.html">Tasks</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="performance.html">Performance</a>
+                        <a class="nav-link" href="about.html">
+                            <i class="bi bi-info-circle me-1"></i>About
+                        </a>
                     </li>
                 </ul>
+                <div class="theme-switch-wrapper me-3">
+                    <i class="bi bi-sun-fill theme-icon light-icon"></i>
+                    <div class="form-check form-switch ms-2 me-2">
+                        <input class="form-check-input" type="checkbox" id="themeSwitch">
+                    </div>
+                    <i class="bi bi-moon-fill theme-icon dark-icon"></i>
+                </div>
                 <div class="navbar-nav ms-auto">
-                    <div class="nav-item dropdown" id="profileDropdown">
+                    <div class="nav-item dropdown" id="profileDropdown" style="display: none;">
                         <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="background: rgba(255, 255, 255, 0.1); padding: 8px 16px; border-radius: 50px;">
                             <img id="userProfilePic" src="https://via.placeholder.com/32" alt="Profile" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover; border: 2px solid var(--primary-color);">
                             <span id="userName" class="d-none d-md-inline" style="color: var(--text-color); font-weight: 500;">Sign In</span>
@@ -178,358 +56,199 @@
                         </ul>
                     </div>
                     <div class="nav-item" id="authButtons">
-                        <a href="signin.html" class="btn btn-primary me-2">Sign In</a>
-                        <a href="signup.html" class="btn btn-outline-primary">Sign Up</a>
+                        <button onclick="signInWithGoogle()" class="btn btn-primary d-flex align-items-center">
+                            <svg class="me-2" width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285f4"/>
+                                <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34a853"/>
+                                <path d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.192 0 7.556 0 9s.348 2.808.957 4.039l3.007-2.332z" fill="#fbbc05"/>
+                                <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z" fill="#ea4335"/>
+                            </svg>
+                            Sign In / Sign Up with Google
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- Settings Content -->
-    <div class="container">
-        <div class="settings-container">
-            <h1 class="settings-title"><i class="bi bi-gear"></i> Settings</h1>
-
-            <!-- Appearance Settings -->
-            <div class="settings-section">
-                <h2 class="settings-subtitle">Appearance</h2>
-                
-                <div class="setting-item">
-                    <div class="setting-info">
-                        <div class="setting-label">Theme Mode</div>
-                        <p class="setting-description">Choose between light and dark theme</p>
-                    </div>
-                    <div class="setting-control">
-                        <select class="form-select" id="themeSelect">
-                            <option value="light">Light</option>
-                            <option value="dark">Dark</option>
-                            <option value="auto">Auto (System)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="setting-item">
-                    <div class="setting-info">
-                        <div class="setting-label">Primary Color</div>
-                        <p class="setting-description">Choose your preferred accent color</p>
-                    </div>
-                    <div class="setting-control">
-                        <input type="color" class="color-picker" id="primaryColorPicker" value="#4361ee">
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="settings-sidebar">
+                    <h5 class="mb-3">Settings</h5>
+                    <div class="list-group">
+                        <a href="#appearance" class="list-group-item list-group-item-action active" data-bs-toggle="list">
+                            <i class="bi bi-palette me-2"></i>Appearance
+                        </a>
+                        <a href="#notifications" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                            <i class="bi bi-bell me-2"></i>Notifications
+                        </a>
+                        <a href="#language" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                            <i class="bi bi-translate me-2"></i>Language
+                        </a>
+                        <a href="#privacy" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                            <i class="bi bi-shield-lock me-2"></i>Privacy
+                        </a>
+                        <a href="#study" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                            <i class="bi bi-book me-2"></i>Study Preferences
+                        </a>
                     </div>
                 </div>
             </div>
-
-            <!-- Notification Settings -->
-            <div class="settings-section">
-                <h2 class="settings-subtitle">Notifications</h2>
-                
-                <div class="setting-item">
-                    <div class="setting-info">
-                        <div class="setting-label">Task Reminders</div>
-                        <p class="setting-description">Get notifications for upcoming tasks</p>
+            <div class="col-md-9">
+                <div class="tab-content">
+                    <!-- Appearance Settings -->
+                    <div class="tab-pane fade show active" id="appearance">
+                        <h4 class="mb-4">Appearance Settings</h4>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div>
+                                        <h5 class="mb-1">Dark Mode</h5>
+                                        <p class="text-muted mb-0">Switch between light and dark themes</p>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="themeSwitch">
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h5 class="mb-1">Primary Color</h5>
+                                        <p class="text-muted mb-0">Choose your preferred accent color</p>
+                                    </div>
+                                    <div class="color-picker-wrapper">
+                                        <input type="color" id="primaryColorPicker" class="form-control form-control-color" value="#4361ee" title="Choose your color">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="setting-control">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="taskNotifications" checked>
+
+                    <!-- Notifications Settings -->
+                    <div class="tab-pane fade" id="notifications">
+                        <h4 class="mb-4">Notification Settings</h4>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div>
+                                        <h5 class="mb-1">Enable Notifications</h5>
+                                        <p class="text-muted mb-0">Receive notifications for study reminders and updates</p>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="notificationsToggle">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Language Settings -->
+                    <div class="tab-pane fade" id="language">
+                        <h4 class="mb-4">Language Settings</h4>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="languageSelect" class="form-label">Select Language</label>
+                                    <select class="form-select" id="languageSelect">
+                                        <option value="en">English</option>
+                                        <option value="es">Español</option>
+                                        <option value="fr">Français</option>
+                                        <option value="de">Deutsch</option>
+                                        <option value="hi">हिंदी</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Privacy Settings -->
+                    <div class="tab-pane fade" id="privacy">
+                        <h4 class="mb-4">Privacy Settings</h4>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div>
+                                        <h5 class="mb-1">Share Watch History</h5>
+                                        <p class="text-muted mb-0">Allow others to see your watch history</p>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="shareHistoryToggle">
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div>
+                                        <h5 class="mb-1">Share Notes</h5>
+                                        <p class="text-muted mb-0">Allow others to see your study notes</p>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="shareNotesToggle">
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h5 class="mb-1">Share Progress</h5>
+                                        <p class="text-muted mb-0">Allow others to see your study progress</p>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="shareProgressToggle">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Study Preferences -->
+                    <div class="tab-pane fade" id="study">
+                        <h4 class="mb-4">Study Preferences</h4>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div>
+                                        <h5 class="mb-1">Auto-play Next Video</h5>
+                                        <p class="text-muted mb-0">Automatically play the next video in your playlist</p>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="autoPlayToggle">
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="mb-3">
+                                    <label for="playbackSpeedSelect" class="form-label">Default Playback Speed</label>
+                                    <select class="form-select" id="playbackSpeedSelect">
+                                        <option value="0.5">0.5x</option>
+                                        <option value="0.75">0.75x</option>
+                                        <option value="1.0">1.0x</option>
+                                        <option value="1.25">1.25x</option>
+                                        <option value="1.5">1.5x</option>
+                                        <option value="2.0">2.0x</option>
+                                    </select>
+                                </div>
+                                <hr>
+                                <div class="mb-3">
+                                    <label for="qualitySelect" class="form-label">Default Video Quality</label>
+                                    <select class="form-select" id="qualitySelect">
+                                        <option value="auto">Auto</option>
+                                        <option value="144">144p</option>
+                                        <option value="240">240p</option>
+                                        <option value="360">360p</option>
+                                        <option value="480">480p</option>
+                                        <option value="720">720p</option>
+                                        <option value="1080">1080p</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                <div class="setting-item">
-                    <div class="setting-info">
-                        <div class="setting-label">Study Reminders</div>
-                        <p class="setting-description">Get daily study reminders</p>
-                    </div>
-                    <div class="setting-control">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="studyReminders">
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Language Settings -->
-            <div class="settings-section">
-                <h2 class="settings-subtitle">Language & Region</h2>
-                
-                <div class="setting-item">
-                    <div class="setting-info">
-                        <div class="setting-label">Language</div>
-                        <p class="setting-description">Choose your preferred language</p>
-                    </div>
-                    <div class="setting-control">
-                        <select class="form-select" id="languageSelect">
-                            <option value="en">English</option>
-                            <option value="hi">Hindi</option>
-                            <option value="hi-en">Hinglish</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Privacy Settings -->
-            <div class="settings-section">
-                <h2 class="settings-subtitle">Privacy</h2>
-                
-                <div class="setting-item">
-                    <div class="setting-info">
-                        <div class="setting-label">Activity Status</div>
-                        <p class="setting-description">Show when you're active on Study Flow</p>
-                    </div>
-                    <div class="setting-control">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="activityStatus" checked>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="setting-item">
-                    <div class="setting-info">
-                        <div class="setting-label">Data Collection</div>
-                        <p class="setting-description">Help improve Study Flow by sending usage data</p>
-                    </div>
-                    <div class="setting-control">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="dataCollection">
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Save Button -->
-            <div class="text-center mt-4">
-                <button class="btn btn-save" id="saveSettings">
-                    <i class="bi bi-check2-circle me-2"></i>Save Changes
-                </button>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="module">
-        // Import Firebase modules
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-        import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js';
-        import { 
-            getAuth, 
-            signOut,
-            onAuthStateChanged 
-        } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-        import { getDatabase, ref, set, get } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js';
-
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyD33YiLLyTxlIycnHcArDKbgxvK_se27eA",
-            authDomain: "studyflow-6ed25.firebaseapp.com",
-            databaseURL: "https://studyflow-6ed25-default-rtdb.firebaseio.com",
-            projectId: "studyflow-6ed25",
-            storageBucket: "studyflow-6ed25.firebasestorage.app",
-            messagingSenderId: "562903369542",
-            appId: "1:562903369542:web:3f80ceb14d749870fc0747",
-            measurementId: "G-TD7DS8YKSB"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-        const auth = getAuth(app);
-        const db = getDatabase(app);
-
-        let currentUser = null;
-
-        // Update UI based on auth state
-        onAuthStateChanged(auth, async (user) => {
-            const profilePic = document.getElementById('userProfilePic');
-            const userName = document.getElementById('userName');
-            const profileDropdown = document.getElementById('profileDropdown');
-            const authButtons = document.getElementById('authButtons');
-            
-            if (user) {
-                currentUser = user;
-                profilePic.src = user.photoURL || 'https://via.placeholder.com/32';
-                userName.textContent = user.displayName || 'User';
-                profileDropdown.classList.remove('d-none');
-                authButtons.classList.add('d-none');
-                
-                // Load user settings from Firebase
-                await loadUserSettings();
-            } else {
-                currentUser = null;
-                profileDropdown.classList.add('d-none');
-                authButtons.classList.remove('d-none');
-            }
-        });
-
-        // Sign out functionality
-        document.getElementById('signOutButton').addEventListener('click', async () => {
-            try {
-                await signOut(auth);
-                showNotification('Successfully signed out!', 'success');
-                window.location.href = 'index.html';
-            } catch (error) {
-                console.error('Error signing out:', error);
-                showNotification('Error signing out. Please try again.', 'error');
-            }
-        });
-
-        // Load user settings from Firebase
-        async function loadUserSettings() {
-            try {
-                const settingsRef = ref(db, `users/${currentUser.uid}/settings`);
-                const snapshot = await get(settingsRef);
-                const settings = snapshot.val() || getDefaultSettings();
-
-                // Apply settings to UI
-                document.getElementById('themeSelect').value = settings.theme;
-                document.getElementById('primaryColorPicker').value = settings.primaryColor;
-                document.getElementById('taskNotifications').checked = settings.taskNotifications;
-                document.getElementById('studyReminders').checked = settings.studyReminders;
-                document.getElementById('activityStatus').checked = settings.activityStatus;
-                document.getElementById('dataCollection').checked = settings.dataCollection;
-                document.getElementById('languageSelect').value = settings.language;
-
-                // Apply theme and color
-                applyThemeAndColor(settings.theme, settings.primaryColor);
-            } catch (error) {
-                console.error('Error loading settings:', error);
-                showNotification('Error loading settings. Using defaults.', 'error');
-            }
-        }
-
-        // Get default settings
-        function getDefaultSettings() {
-            return {
-                theme: 'light',
-                primaryColor: '#4361ee',
-                taskNotifications: true,
-                studyReminders: false,
-                activityStatus: true,
-                dataCollection: false,
-                language: 'en'
-            };
-        }
-
-        // Apply theme and color
-        function applyThemeAndColor(theme, color) {
-            document.documentElement.setAttribute('data-bs-theme', theme);
-            document.documentElement.style.setProperty('--primary-color', color);
-            document.documentElement.style.setProperty('--primary-rgb', hexToRgb(color));
-        }
-
-        // Convert hex color to RGB
-        function hexToRgb(hex) {
-            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-            return result ? 
-                `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : 
-                '67, 97, 238';
-        }
-
-        // Save settings to Firebase
-        async function saveUserSettings(settings) {
-            try {
-                const settingsRef = ref(db, `users/${currentUser.uid}/settings`);
-                await set(settingsRef, settings);
-                showNotification('Settings saved successfully!', 'success');
-            } catch (error) {
-                console.error('Error saving settings:', error);
-                showNotification('Error saving settings. Please try again.', 'error');
-            }
-        }
-
-        // Theme change handler
-        document.getElementById('themeSelect').addEventListener('change', (e) => {
-            const theme = e.target.value;
-            const currentColor = document.getElementById('primaryColorPicker').value;
-            applyThemeAndColor(theme, currentColor);
-        });
-
-        // Color picker change handler
-        document.getElementById('primaryColorPicker').addEventListener('input', (e) => {
-            const color = e.target.value;
-            const currentTheme = document.getElementById('themeSelect').value;
-            applyThemeAndColor(currentTheme, color);
-        });
-
-        // Save settings button click handler
-        document.getElementById('saveSettings').addEventListener('click', async () => {
-            if (!currentUser) {
-                showNotification('Please sign in to save settings.', 'error');
-                return;
-            }
-
-            const settings = {
-                theme: document.getElementById('themeSelect').value,
-                primaryColor: document.getElementById('primaryColorPicker').value,
-                taskNotifications: document.getElementById('taskNotifications').checked,
-                studyReminders: document.getElementById('studyReminders').checked,
-                activityStatus: document.getElementById('activityStatus').checked,
-                dataCollection: document.getElementById('dataCollection').checked,
-                language: document.getElementById('languageSelect').value
-            };
-
-            // Save to Firebase
-            await saveUserSettings(settings);
-
-            // Apply analytics settings
-            if (settings.dataCollection) {
-                analytics.setAnalyticsCollectionEnabled(true);
-            } else {
-                analytics.setAnalyticsCollectionEnabled(false);
-            }
-        });
-
-        // Show notification function
-        function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
-        }
-
-        // Add notification styles
-        const style = document.createElement('style');
-        style.textContent = `
-            .notification {
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                padding: 12px 24px;
-                border-radius: 8px;
-                color: white;
-                font-weight: 500;
-                z-index: 1000;
-                animation: slideIn 0.3s ease-out;
-            }
-
-            .notification.success {
-                background: linear-gradient(135deg, #4CAF50, #45a049);
-            }
-
-            .notification.error {
-                background: linear-gradient(135deg, #f44336, #d32f2f);
-            }
-
-            .notification.info {
-                background: linear-gradient(135deg, #2196F3, #1976D2);
-            }
-
-            @keyframes slideIn {
-                from {
-                    transform: translateX(100%);
-                    opacity: 0;
-                }
-                to {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-            }
-        `;
-        document.head.appendChild(style);
-    </script>
+    <script type="module" src="themeManager.js"></script>
+    <script type="module" src="settings.js"></script>
 </body>
 </html> 
