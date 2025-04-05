@@ -64,6 +64,9 @@ onAuthStateChanged(auth, async (user) => {
         
         // Set up world chat option
         setupWorldChat();
+
+        // Call initTheme when user logs in
+        initTheme();
     } else {
         // Redirect to signin page if not authenticated
         window.location.href = 'index.html';
@@ -204,15 +207,39 @@ function displayWorldChatMessages(messages) {
         const senderName = message.sender === currentUser.uid ? 'You' : sender.displayName;
         const senderAvatar = sender.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(sender.displayName || 'User')}&background=random`;
         
+        // Add edit and delete options for own messages
+        const messageActions = message.sender === currentUser.uid ? `
+            <div class="message-actions">
+                <button class="btn btn-link text-white p-0 edit-btn" title="Edit">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+                <button class="btn btn-link text-white p-0 delete-btn" title="Delete">
+                    <i class="bi bi-trash-fill"></i>
+                </button>
+            </div>
+        ` : '';
+        
         messageElement.innerHTML = `
             <a href="profile.html?uid=${message.sender}" class="profile-link">
                 <img src="${senderAvatar}" alt="${senderName}" class="message-avatar" title="View ${senderName}'s profile">
             </a>
             <div class="message-content">
-                <div class="message-text">${message.text}</div>
-                <div class="message-time">${time}</div>
+                <div class="message-text" id="content-${messageId}">${message.text}</div>
+                <div class="message-footer">
+                    <div class="message-time">${time}${message.edited ? ' (edited)' : ''}</div>
+                    ${messageActions}
+                </div>
             </div>
         `;
+        
+        // Add event listeners for edit and delete buttons
+        if (message.sender === currentUser.uid) {
+            const editBtn = messageElement.querySelector('.edit-btn');
+            const deleteBtn = messageElement.querySelector('.delete-btn');
+            
+            editBtn.addEventListener('click', () => editWorldChatMessage(messageId, message.text));
+            deleteBtn.addEventListener('click', () => deleteWorldChatMessage(messageId));
+        }
         
         container.appendChild(messageElement);
     });
@@ -235,23 +262,28 @@ async function sendWorldChatMessage(text) {
 
 // Function to edit world chat message
 async function editWorldChatMessage(messageId, currentText) {
-    const contentElement = document.getElementById(`content-${messageId}`);
+    const messageElement = document.getElementById(`content-${messageId}`);
+    const originalContent = messageElement.innerHTML;
     const originalText = currentText;
 
-    // Create edit input
-    contentElement.innerHTML = `
+    // Create edit form
+    messageElement.innerHTML = `
         <div class="edit-message-form">
-            <input type="text" class="form-control edit-input" value="${originalText}">
-            <div class="edit-actions mt-2">
-                <button class="btn btn-sm btn-primary save-edit">Save</button>
-                <button class="btn btn-sm btn-secondary cancel-edit">Cancel</button>
+            <div class="input-group">
+                <input type="text" class="form-control" value="${originalText}">
+                <button class="btn btn-primary save-edit" type="button">
+                    <i class="bi bi-check-lg"></i>
+                </button>
+                <button class="btn btn-secondary cancel-edit" type="button">
+                    <i class="bi bi-x-lg"></i>
+                </button>
             </div>
         </div>
     `;
 
-    const editInput = contentElement.querySelector('.edit-input');
-    const saveBtn = contentElement.querySelector('.save-edit');
-    const cancelBtn = contentElement.querySelector('.cancel-edit');
+    const editInput = messageElement.querySelector('input');
+    const saveBtn = messageElement.querySelector('.save-edit');
+    const cancelBtn = messageElement.querySelector('.cancel-edit');
 
     // Focus input and place cursor at end
     editInput.focus();
@@ -261,21 +293,46 @@ async function editWorldChatMessage(messageId, currentText) {
     saveBtn.addEventListener('click', async () => {
         const newText = editInput.value.trim();
         if (newText && newText !== originalText) {
-            const messageRef = ref(db, `worldChat/messages/${messageId}`);
-            await set(messageRef, {
-                sender: currentUser.uid,
-                text: newText,
-                timestamp: Date.now(),
-                edited: true
-            });
+            try {
+                const messageRef = ref(db, `worldChat/messages/${messageId}`);
+                const snapshot = await get(messageRef);
+                const currentMessage = snapshot.val();
+                
+                if (currentMessage && currentMessage.sender === currentUser.uid) {
+                    await set(messageRef, {
+                        ...currentMessage,
+                        text: newText,
+                        edited: true,
+                        editedAt: Date.now()
+                    });
+                }
+            } catch (error) {
+                console.error('Error editing message:', error);
+                messageElement.innerHTML = originalContent;
+            }
         } else {
-            contentElement.textContent = originalText;
+            messageElement.innerHTML = originalContent;
         }
     });
 
     // Handle cancel
     cancelBtn.addEventListener('click', () => {
-        contentElement.textContent = originalText;
+        messageElement.innerHTML = originalContent;
+    });
+
+    // Handle Enter key
+    editInput.addEventListener('keypress', async (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            saveBtn.click();
+        }
+    });
+
+    // Handle Escape key
+    editInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            cancelBtn.click();
+        }
     });
 }
 
@@ -399,27 +456,25 @@ async function selectUser(uid) {
 }
 
 function updateUsersList(users) {
-    const usersList = document.getElementById('usersList');
-    usersList.innerHTML = '';
     usersMap.clear();
-
-    // Count online users
-    let onlineCount = 1; // Start with 1 to include current user
-
     Object.entries(users).forEach(([uid, userData]) => {
         if (uid !== currentUser.uid) {
             usersMap.set(uid, userData);
-            const userElement = createUserElement(uid, userData);
-            usersList.appendChild(userElement);
-            // Increment online count if user is online
-            if (userData.status === 'online') {
-                onlineCount++;
-            }
         }
     });
 
+    // Update both online users and friends lists
+    updateOnlineUsersList(users);
+    updateFriendsList(users);
+
     // Update world chat status if we're in world chat
     if (isWorldChat) {
+        let onlineCount = 1; // Start with 1 to include current user
+        usersMap.forEach(userData => {
+            if (userData.status === 'online') {
+                onlineCount++;
+            }
+        });
         document.getElementById('activeChatUserStatus').textContent = `${onlineCount} users online • All users can chat here`;
     }
 }
@@ -498,15 +553,46 @@ function displayMessages(messages) {
             senderName = userData?.displayName || 'User';
         }
         
+        // Add edit and delete options for own messages
+        const messageActions = message.sender === currentUser.uid ? `
+            <div class="message-actions">
+                <button class="btn btn-link text-white p-0 edit-btn" title="Edit">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+                <button class="btn btn-link text-white p-0 delete-btn" title="Delete">
+                    <i class="bi bi-trash-fill"></i>
+                </button>
+            </div>
+        ` : '';
+        
         messageElement.innerHTML = `
             <a href="profile.html?uid=${message.sender}" class="profile-link">
                 <img src="${senderAvatar}" alt="${senderName}" class="message-avatar" title="View ${senderName}'s profile">
             </a>
             <div class="message-content">
-                <div class="message-text">${message.text}</div>
-                <div class="message-time">${time}</div>
+                <div class="message-text" id="content-${messageId}">${message.text}</div>
+                <div class="message-footer">
+                    <div class="message-time">${time}${message.edited ? ' (edited)' : ''}</div>
+                    ${messageActions}
+                </div>
             </div>
         `;
+        
+        // Add event listeners for edit and delete buttons
+        if (message.sender === currentUser.uid) {
+            const editBtn = messageElement.querySelector('.edit-btn');
+            const deleteBtn = messageElement.querySelector('.delete-btn');
+            
+            editBtn.addEventListener('click', () => {
+                const chatId = getChatId(currentUser.uid, selectedUser);
+                editPrivateMessage(messageId, message.text, chatId);
+            });
+            
+            deleteBtn.addEventListener('click', () => {
+                const chatId = getChatId(currentUser.uid, selectedUser);
+                deletePrivateMessage(messageId, chatId);
+            });
+        }
         
         container.appendChild(messageElement);
     });
@@ -515,24 +601,30 @@ function displayMessages(messages) {
     container.scrollTop = container.scrollHeight;
 }
 
-async function editMessage(messageId, currentText) {
-    const contentElement = document.getElementById(`content-${messageId}`);
+// Function to edit private chat message
+async function editPrivateMessage(messageId, currentText, chatId) {
+    const messageElement = document.getElementById(`content-${messageId}`);
+    const originalContent = messageElement.innerHTML;
     const originalText = currentText;
 
-    // Create edit input
-    contentElement.innerHTML = `
+    // Create edit form
+    messageElement.innerHTML = `
         <div class="edit-message-form">
-            <input type="text" class="form-control edit-input" value="${originalText}">
-            <div class="edit-actions mt-2">
-                <button class="btn btn-sm btn-primary save-edit">Save</button>
-                <button class="btn btn-sm btn-secondary cancel-edit">Cancel</button>
+            <div class="input-group">
+                <input type="text" class="form-control" value="${originalText}">
+                <button class="btn btn-primary save-edit" type="button">
+                    <i class="bi bi-check-lg"></i>
+                </button>
+                <button class="btn btn-secondary cancel-edit" type="button">
+                    <i class="bi bi-x-lg"></i>
+                </button>
             </div>
         </div>
     `;
 
-    const editInput = contentElement.querySelector('.edit-input');
-    const saveBtn = contentElement.querySelector('.save-edit');
-    const cancelBtn = contentElement.querySelector('.cancel-edit');
+    const editInput = messageElement.querySelector('input');
+    const saveBtn = messageElement.querySelector('.save-edit');
+    const cancelBtn = messageElement.querySelector('.cancel-edit');
 
     // Focus input and place cursor at end
     editInput.focus();
@@ -542,44 +634,159 @@ async function editMessage(messageId, currentText) {
     saveBtn.addEventListener('click', async () => {
         const newText = editInput.value.trim();
         if (newText && newText !== originalText) {
-            const chatId = getChatId(currentUser.uid, selectedUser);
-            const messageRef = ref(db, `chats/${chatId}/messages/${messageId}`);
-            await set(messageRef, {
-                sender: currentUser.uid,
-                text: newText,
-                timestamp: Date.now(),
-                edited: true
-            });
+            try {
+                const messageRef = ref(db, `chats/${chatId}/messages/${messageId}`);
+                const snapshot = await get(messageRef);
+                const currentMessage = snapshot.val();
+                
+                if (currentMessage && currentMessage.sender === currentUser.uid) {
+                    await set(messageRef, {
+                        ...currentMessage,
+                        text: newText,
+                        edited: true,
+                        editedAt: Date.now()
+                    });
+                }
+            } catch (error) {
+                console.error('Error editing message:', error);
+                messageElement.innerHTML = originalContent;
+            }
         } else {
-            contentElement.textContent = originalText;
+            messageElement.innerHTML = originalContent;
         }
     });
 
     // Handle cancel
     cancelBtn.addEventListener('click', () => {
-        contentElement.textContent = originalText;
+        messageElement.innerHTML = originalContent;
+    });
+
+    // Handle Enter key
+    editInput.addEventListener('keypress', async (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            saveBtn.click();
+        }
+    });
+
+    // Handle Escape key
+    editInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            cancelBtn.click();
+        }
     });
 }
 
-async function deleteMessage(messageId) {
+// Function to delete private chat message
+async function deletePrivateMessage(messageId, chatId) {
     if (confirm('Are you sure you want to delete this message?')) {
         try {
-            const chatId = getChatId(currentUser.uid, selectedUser);
             const messageRef = ref(db, `chats/${chatId}/messages/${messageId}`);
-            await set(messageRef, null);
+            const snapshot = await get(messageRef);
+            const message = snapshot.val();
+            
+            if (message && message.sender === currentUser.uid) {
+                await set(messageRef, null);
+            }
         } catch (error) {
             console.error('Error deleting message:', error);
         }
     }
 }
 
-// Add CSS styles for message actions
+// Add CSS styles for messages and dark mode
 const style = document.createElement('style');
 style.textContent = `
     .message {
+        max-width: 80%;
+        margin-bottom: 1rem;
+        padding: 0.75rem 1rem;
+        border-radius: 12px;
         position: relative;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
     }
-    
+
+    .message.sent {
+        background: #0D6EFD;
+        color: white;
+        align-self: flex-end;
+        border-radius: 16px 16px 4px 16px;
+        margin-left: auto;
+        flex-direction: row-reverse;
+    }
+
+    .message.received {
+        background: var(--bs-dark);
+        color: var(--bs-light);
+        align-self: flex-start;
+        border-radius: 16px 16px 16px 4px;
+    }
+
+    [data-bs-theme="dark"] .message.received {
+        background: #2B3035;
+        border: 1px solid #373B3E;
+    }
+
+    .message-content {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .message-text {
+        margin-bottom: 4px;
+        word-break: break-word;
+    }
+
+    .message-time {
+        font-size: 0.75rem;
+        opacity: 0.8;
+        margin-top: 2px;
+        color: inherit;
+    }
+
+    .message-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .message.sent .message-time {
+        text-align: right;
+    }
+
+    .message.received .message-avatar {
+        margin-right: 8px;
+    }
+
+    .message.sent .message-avatar {
+        margin-left: 8px;
+    }
+
+    .messages-container {
+        padding: 1rem;
+        overflow-y: auto;
+        height: calc(100vh - 180px);
+        background: var(--bs-body-bg);
+    }
+
+    [data-bs-theme="dark"] .messages-container {
+        background: #212529;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+        color: var(--bs-secondary);
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
     .message-footer {
         display: flex;
         justify-content: space-between;
@@ -620,6 +827,7 @@ style.textContent = `
         gap: 8px;
     }
 `;
+
 document.head.appendChild(style);
 
 // Handle theme switching
@@ -647,8 +855,8 @@ async function toggleTheme() {
     if (!currentUser) return;
     
     try {
-        const currentTheme = document.documentElement.getAttribute('data-bs-theme');
-        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        const isDarkMode = themeSwitch.checked;
+        const newTheme = isDarkMode ? 'dark' : 'light';
         
         // Update theme immediately
         document.documentElement.setAttribute('data-bs-theme', newTheme);
@@ -709,4 +917,686 @@ const profileLinkStyles = `
     }
 `;
 
-style.textContent += profileLinkStyles; 
+style.textContent += profileLinkStyles;
+
+// Add responsive CSS styles
+const responsiveStyles = `
+    /* Mobile Navigation */
+    .mobile-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--bs-body-bg);
+        border-top: 1px solid var(--bs-border-color);
+        padding: 12px 8px;
+        z-index: 1000;
+        display: flex;
+        justify-content: space-around;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .mobile-nav .nav-link {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 8px 16px;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        position: relative;
+        color: var(--bs-body-color) !important;
+    }
+
+    .mobile-nav .nav-link i {
+        font-size: 1.5rem;
+        margin-bottom: 4px;
+        transition: all 0.3s ease;
+        color: var(--bs-body-color);
+    }
+
+    .mobile-nav .nav-link small {
+        font-size: 0.75rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        color: var(--bs-body-color);
+    }
+
+    /* Hover effects */
+    .mobile-nav .nav-link:hover {
+        transform: translateY(-2px);
+    }
+
+    .mobile-nav .nav-link[data-section="world"]:hover {
+        background: rgba(13, 110, 253, 0.1);
+    }
+
+    .mobile-nav .nav-link[data-section="world"]:hover i,
+    .mobile-nav .nav-link[data-section="world"]:hover small {
+        color: #0D6EFD;
+    }
+
+    .mobile-nav .nav-link[data-section="online"]:hover {
+        background: rgba(25, 135, 84, 0.1);
+    }
+
+    .mobile-nav .nav-link[data-section="online"]:hover i,
+    .mobile-nav .nav-link[data-section="online"]:hover small {
+        color: #198754;
+    }
+
+    .mobile-nav .nav-link[data-section="friends"]:hover {
+        background: rgba(220, 53, 69, 0.1);
+    }
+
+    .mobile-nav .nav-link[data-section="friends"]:hover i,
+    .mobile-nav .nav-link[data-section="friends"]:hover small {
+        color: #DC3545;
+    }
+
+    .mobile-nav .nav-link[data-section="groups"]:hover {
+        background: rgba(102, 16, 242, 0.1);
+    }
+
+    .mobile-nav .nav-link[data-section="groups"]:hover i,
+    .mobile-nav .nav-link[data-section="groups"]:hover small {
+        color: #6610F2;
+    }
+
+    /* Active states */
+    .mobile-nav .nav-link.active {
+        transform: translateY(-4px);
+    }
+
+    .mobile-nav .nav-link.active i,
+    .mobile-nav .nav-link.active small {
+        color: white !important;
+    }
+
+    .mobile-nav .nav-link[data-section="world"].active {
+        background: #0D6EFD;
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+    }
+
+    .mobile-nav .nav-link[data-section="online"].active {
+        background: #198754;
+        box-shadow: 0 4px 12px rgba(25, 135, 84, 0.3);
+    }
+
+    .mobile-nav .nav-link[data-section="friends"].active {
+        background: #DC3545;
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    }
+
+    .mobile-nav .nav-link[data-section="groups"].active {
+        background: #6610F2;
+        box-shadow: 0 4px 12px rgba(102, 16, 242, 0.3);
+    }
+
+    /* Dark mode adjustments */
+    [data-bs-theme="dark"] .mobile-nav {
+        background: #212529;
+        border-color: #373B3E;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.25);
+    }
+
+    [data-bs-theme="dark"] .mobile-nav .nav-link {
+        opacity: 0.95;
+    }
+
+    [data-bs-theme="dark"] .mobile-nav .nav-link:hover {
+        opacity: 1;
+    }
+
+    [data-bs-theme="dark"] .mobile-nav .nav-link.active {
+        opacity: 1;
+    }
+
+    /* Chat Container */
+    .chat-container {
+        height: calc(100vh - 56px);
+        overflow: hidden;
+    }
+
+    /* Sections */
+    .chat-section {
+        padding: 1rem;
+        border-bottom: 1px solid var(--bs-border-color);
+    }
+
+    .section-header {
+        margin-bottom: 1rem;
+    }
+
+    /* Chat Area */
+    .chat-main {
+        height: 100%;
+    }
+
+    .chat-area {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .chat-header {
+        padding: 1rem;
+        background: var(--bs-body-bg);
+        border-bottom: 1px solid var(--bs-border-color);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .messages-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+        margin-bottom: 60px;
+    }
+
+    @media (max-width: 991.98px) {
+        .messages-container {
+            height: calc(100vh - 180px);
+            margin-bottom: 80px;
+        }
+
+        .message-form {
+            position: fixed;
+            bottom: 76px;
+            left: 0;
+            right: 0;
+            padding: 1rem;
+            background: var(--bs-body-bg);
+            border-top: 1px solid var(--bs-border-color);
+        }
+
+        .message {
+            max-width: 85%;
+        }
+
+        .chat-header {
+            position: sticky;
+            top: 0;
+            background: var(--bs-body-bg);
+            z-index: 1000;
+        }
+    }
+
+    /* Message Form */
+    .message-form {
+        padding: 1rem;
+        background: var(--bs-body-bg);
+        border-top: 1px solid var(--bs-border-color);
+    }
+
+    .message-form .input-group {
+        background: var(--bs-body-bg);
+    }
+
+    .message-form input {
+        border-radius: 24px;
+        padding: 0.75rem 1.25rem;
+        border: 1px solid var(--bs-border-color);
+        background: var(--bs-body-bg);
+    }
+
+    .message-form button {
+        border-radius: 50%;
+        width: 42px;
+        height: 42px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 8px;
+    }
+`;
+
+style.textContent += responsiveStyles;
+
+// Add mobile navigation functionality
+document.querySelectorAll('.mobile-nav .nav-link').forEach(button => {
+    button.addEventListener('click', () => {
+        // Remove active class from all buttons
+        document.querySelectorAll('.mobile-nav .nav-link').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Add active class to clicked button
+        button.classList.add('active');
+        
+        // Show corresponding section
+        const sectionName = button.dataset.section;
+        document.querySelectorAll('.chat-section').forEach(section => {
+            if (section.dataset.section === sectionName) {
+                section.style.display = 'block';
+            } else {
+                section.style.display = 'none';
+            }
+        });
+    });
+});
+
+// Add styles for sections
+const sectionStyles = `
+    /* Sections Common Styles */
+    .chat-section {
+        padding: 1.25rem;
+        border-bottom: 1px solid var(--bs-border-color);
+    }
+
+    .section-header {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--bs-heading-color);
+    }
+
+    /* Users List Styles */
+    .users-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .user-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        gap: 12px;
+        background: var(--bs-body-bg);
+    }
+
+    .user-item:hover {
+        background: rgba(var(--bs-primary-rgb), 0.1);
+    }
+
+    .user-item.active {
+        background: var(--bs-primary);
+        color: white;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .user-info {
+        flex: 1;
+    }
+
+    .user-name {
+        font-weight: 500;
+        margin-bottom: 2px;
+    }
+
+    .user-status {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-left: auto;
+    }
+
+    .user-status.online {
+        background: #198754;
+    }
+
+    .user-status.offline {
+        background: #6c757d;
+    }
+
+    /* Groups List Styles */
+    .groups-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .group-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        gap: 12px;
+        background: var(--bs-body-bg);
+    }
+
+    .group-item:hover {
+        background: rgba(var(--bs-primary-rgb), 0.1);
+    }
+
+    .group-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        background: var(--bs-primary);
+        color: white;
+    }
+
+    .group-info {
+        flex: 1;
+    }
+
+    .group-name {
+        font-weight: 500;
+        margin-bottom: 2px;
+    }
+
+    /* Search Inputs */
+    .form-control-sm {
+        border-radius: 20px;
+        padding: 0.375rem 1rem;
+    }
+
+    .btn-sm {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+
+    /* Dark Mode Adjustments */
+    [data-bs-theme="dark"] .user-item,
+    [data-bs-theme="dark"] .group-item {
+        background: #2B3035;
+        border: 1px solid #373B3E;
+    }
+
+    [data-bs-theme="dark"] .user-item:hover,
+    [data-bs-theme="dark"] .group-item:hover {
+        background: #373B3E;
+        border-color: #495057;
+    }
+
+    [data-bs-theme="dark"] .form-control {
+        background: #2B3035;
+        border-color: #373B3E;
+        color: #fff;
+    }
+
+    [data-bs-theme="dark"] .form-control:focus {
+        background: #2B3035;
+        border-color: var(--bs-primary);
+        color: #fff;
+    }
+`;
+
+style.textContent += sectionStyles;
+
+// Function to update online users list
+function updateOnlineUsersList(users) {
+    const onlineUsersList = document.getElementById('onlineUsersList');
+    onlineUsersList.innerHTML = '';
+
+    Object.entries(users).forEach(([uid, userData]) => {
+        if (uid !== currentUser.uid && userData.status === 'online') {
+            const userElement = createUserElement(uid, userData);
+            onlineUsersList.appendChild(userElement);
+        }
+    });
+
+    if (onlineUsersList.children.length === 0) {
+        onlineUsersList.innerHTML = `
+            <div class="empty-state">
+                <i class="bi bi-people"></i>
+                <p>No users online at the moment</p>
+            </div>
+        `;
+    }
+}
+
+// Function to update friends list
+function updateFriendsList(users) {
+    const friendsList = document.getElementById('friendsList');
+    friendsList.innerHTML = '';
+
+    // For now, showing all users as potential friends
+    Object.entries(users).forEach(([uid, userData]) => {
+        if (uid !== currentUser.uid) {
+            const userElement = createUserElement(uid, userData);
+            friendsList.appendChild(userElement);
+        }
+    });
+
+    if (friendsList.children.length === 0) {
+        friendsList.innerHTML = `
+            <div class="empty-state">
+                <i class="bi bi-person-heart"></i>
+                <p>No friends added yet</p>
+            </div>
+        `;
+    }
+}
+
+// Add search functionality
+document.querySelectorAll('.chat-section input[type="text"]').forEach(input => {
+    input.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const section = e.target.closest('.chat-section');
+        const items = section.querySelectorAll('.user-item, .group-item');
+
+        items.forEach(item => {
+            const name = item.querySelector('.user-name, .group-name').textContent.toLowerCase();
+            if (name.includes(searchTerm)) {
+                item.style.display = 'flex';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+});
+
+/* Update the sections container styles */
+const scrollableStyles = `
+    /* Main container styles */
+    .chat-container {
+        height: calc(100vh - 56px);
+        overflow: hidden;
+    }
+
+    /* Sidebar styles */
+    .chat-sidebar {
+        height: 100%;
+        overflow-y: auto;
+        background: var(--bs-body-bg);
+        border-right: 1px solid var(--bs-border-color);
+    }
+
+    .sections-container {
+        height: 100%;
+        overflow-y: auto;
+        padding-bottom: 80px;
+    }
+
+    /* Section styles */
+    .chat-section {
+        padding: 1.25rem;
+        border-bottom: 1px solid var(--bs-border-color);
+    }
+
+    /* Lists styles */
+    .users-list, .groups-list {
+        max-height: calc(100vh - 250px);
+        overflow-y: auto;
+        padding-right: 5px;
+    }
+
+    .users-list::-webkit-scrollbar,
+    .groups-list::-webkit-scrollbar,
+    .sections-container::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .users-list::-webkit-scrollbar-thumb,
+    .groups-list::-webkit-scrollbar-thumb,
+    .sections-container::-webkit-scrollbar-thumb {
+        background: var(--bs-secondary);
+        border-radius: 3px;
+    }
+
+    .users-list::-webkit-scrollbar-track,
+    .groups-list::-webkit-scrollbar-track,
+    .sections-container::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 991.98px) {
+        .chat-container {
+            height: calc(100vh - 56px);
+        }
+
+        .sections-container {
+            height: calc(100vh - 136px);
+            padding-bottom: 90px;
+        }
+
+        .users-list, .groups-list {
+            max-height: calc(100vh - 300px);
+        }
+
+        .mobile-nav {
+            background: var(--bs-body-bg);
+            border-top: 1px solid var(--bs-border-color);
+            padding: 12px 8px;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+    }
+
+    /* Dark mode adjustments */
+    [data-bs-theme="dark"] .chat-sidebar {
+        background: #212529;
+        border-color: #373B3E;
+    }
+
+    [data-bs-theme="dark"] .users-list::-webkit-scrollbar-thumb,
+    [data-bs-theme="dark"] .groups-list::-webkit-scrollbar-thumb,
+    [data-bs-theme="dark"] .sections-container::-webkit-scrollbar-thumb {
+        background: #495057;
+    }
+`;
+
+// Add the scrollable styles to existing styles
+style.textContent += scrollableStyles;
+
+// Add styles for message actions
+const messageActionStyles = `
+    .message-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 4px;
+    }
+
+    .message-actions {
+        display: none;
+        gap: 8px;
+    }
+
+    .message:hover .message-actions {
+        display: flex;
+    }
+
+    .message-actions .btn-link {
+        color: inherit;
+        opacity: 0.7;
+        transition: opacity 0.2s ease;
+    }
+
+    .message-actions .btn-link:hover {
+        opacity: 1;
+    }
+
+    .edit-message-form {
+        margin-top: 8px;
+    }
+
+    .edit-message-form .form-control {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        border-radius: 8px;
+        padding: 8px 12px;
+    }
+
+    .edit-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+    }
+
+    .edit-actions .btn {
+        padding: 4px 12px;
+        font-size: 0.875rem;
+    }
+`;
+
+// Add the message action styles to existing styles
+style.textContent += messageActionStyles;
+
+// Add styles for edit message form
+const editMessageStyles = `
+    .edit-message-form {
+        margin: -4px -8px;
+    }
+
+    .edit-message-form .input-group {
+        background: transparent;
+    }
+
+    .edit-message-form .form-control {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: inherit;
+        border-radius: 8px;
+        padding: 8px 12px;
+    }
+
+    .edit-message-form .btn {
+        padding: 0 10px;
+        margin-left: 4px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .edit-message-form .btn i {
+        font-size: 1.1rem;
+    }
+
+    .message.received .edit-message-form .form-control {
+        background: rgba(0, 0, 0, 0.1);
+        border-color: rgba(0, 0, 0, 0.2);
+    }
+
+    [data-bs-theme="dark"] .message.received .edit-message-form .form-control {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+`;
+
+// Add the edit message styles to existing styles
+style.textContent += editMessageStyles; 
