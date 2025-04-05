@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Flow - Watch History</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="bi bi-book-half me-2"></i>Study Flow
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i class="bi bi-house-door"></i>
+                    Home
+                </a>
+                <a href="history.html" class="nav-link active">
+                    <i class="bi bi-clock-history"></i>
+                    Watch History
+                </a>
+            </div>
+            <div class="theme-switch-wrapper ms-auto">
+                <i class="bi bi-sun-fill theme-icon light-icon"></i>
+                <div class="form-check form-switch ms-2 me-2">
+                    <input class="form-check-input" type="checkbox" id="themeSwitch">
+                </div>
+                <i class="bi bi-moon-fill theme-icon dark-icon"></i>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="section-title">
+                        <i class="bi bi-clock-history me-2"></i>Watch History
+                    </h2>
+                    <button class="btn btn-outline-danger" id="clearHistoryBtn">
+                        <i class="bi bi-trash me-1"></i>Clear History
+                    </button>
+                </div>
+                <div id="watchHistory" class="row">
+                    <!-- Watch history will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme switching functionality
+        const themeSwitch = document.getElementById('themeSwitch');
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-bs-theme', savedTheme);
+            themeSwitch.checked = savedTheme === 'dark';
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            document.documentElement.setAttribute('data-bs-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        themeSwitch.addEventListener('change', toggleTheme);
+        initTheme();
+
+        // Watch history functionality
+        function getWatchHistory() {
+            const history = localStorage.getItem('watchHistory');
+            return history ? JSON.parse(history) : [];
+        }
+
+        function formatWatchDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function displayWatchHistory() {
+            const watchedVideos = getWatchHistory();
+            const watchHistoryElement = document.getElementById('watchHistory');
+            watchHistoryElement.innerHTML = '';
+            
+            if (watchedVideos.length === 0) {
+                watchHistoryElement.innerHTML = `
+                    <div class="col-12 text-center">
+                        <p class="text-muted">No watched videos yet</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            watchedVideos.forEach((video, index) => {
+                const videoCard = document.createElement('div');
+                videoCard.className = 'col-md-4 col-sm-6 mb-4';
+                videoCard.innerHTML = `
+                    <div class="video-card">
+                        <div class="video-card-content" onclick="openVideo('${video.id.videoId}')">
+                            <img src="${video.snippet.thumbnails.medium.url}" alt="${video.snippet.title}" class="video-thumbnail">
+                            <div class="video-info">
+                                <h5 class="video-title">${video.snippet.title}</h5>
+                                <p class="video-channel">${video.snippet.channelTitle}</p>
+                                <p class="video-stats">
+                                    <small class="text-muted">Watched on ${formatWatchDate(video.watchedAt)}</small>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="video-actions">
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteFromWatchHistory(${index})">
+                                <i class="bi bi-trash"></i> Remove
+                            </button>
+                        </div>
+                    </div>
+                `;
+                watchHistoryElement.appendChild(videoCard);
+            });
+        }
+
+        function openVideo(videoId) {
+            window.location.href = `player.html?id=${videoId}`;
+        }
+
+        function deleteFromWatchHistory(index) {
+            let watchedVideos = getWatchHistory();
+            watchedVideos.splice(index, 1);
+            localStorage.setItem('watchHistory', JSON.stringify(watchedVideos));
+            displayWatchHistory();
+        }
+
+        // Clear watch history
+        document.getElementById('clearHistoryBtn').addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear your watch history?')) {
+                localStorage.removeItem('watchHistory');
+                displayWatchHistory();
+            }
+        });
+
+        // Display watch history when page loads
+        displayWatchHistory();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

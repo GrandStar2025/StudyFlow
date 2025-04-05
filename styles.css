@@ -10,6 +10,8 @@
     --text-color: #2b2d42;
     --border-color: #e9ecef;
     --hover-bg: #f1f3f5;
+    --primary-rgb: 67, 97, 238;
+    --secondary-rgb: 63, 55, 201;
 }
 
 [data-bs-theme="dark"] {
@@ -24,6 +26,13 @@
     --text-color: #f8f9fa;
     --border-color: #3f3f3f;
     --hover-bg: #343a40;
+    --primary-rgb: 67, 97, 238;
+    --secondary-rgb: 63, 55, 201;
+    background-image: 
+        linear-gradient(135deg, rgba(var(--primary-rgb), 0.1) 0%, rgba(var(--secondary-rgb), 0.1) 50%, rgba(var(--primary-rgb), 0.1) 100%),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23FFFFFF' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    background-size: 200% 200%, 60px 60px;
+    animation: gradientAnimation 15s ease infinite;
 }
 
 body {
@@ -31,12 +40,20 @@ body {
     min-height: 100vh;
     color: var(--text-color);
     transition: background-color 0.3s, color 0.3s;
+    background-image: 
+        linear-gradient(135deg, rgba(var(--primary-rgb), 0.05) 0%, rgba(var(--secondary-rgb), 0.05) 50%, rgba(var(--primary-rgb), 0.05) 100%),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    background-attachment: fixed;
+    background-size: 200% 200%, 60px 60px;
+    animation: gradientAnimation 15s ease infinite;
 }
 
 .navbar {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
     transition: background-color 0.3s;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
 .navbar-brand {
@@ -84,8 +101,10 @@ body {
     padding: 2rem;
     background: var(--card-bg);
     border-radius: 16px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
     margin-bottom: 2rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(var(--primary-rgb), 0.1);
 }
 
 .section-title {
@@ -168,10 +187,11 @@ body {
     background: var(--card-bg);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
     margin-bottom: 20px;
     transition: transform 0.3s, box-shadow 0.3s;
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(var(--primary-rgb), 0.1);
+    backdrop-filter: blur(10px);
 }
 
 .video-card:hover {
@@ -277,36 +297,35 @@ body {
 }
 
 /* Enhanced Study Notes Styles */
-.notes-section {
-    margin-top: 20px;
-    padding: 25px;
+.notes-section, .tasks-section, .performance-section {
     background: var(--card-bg);
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    color: var(--text-color);
-    border: 1px solid var(--border-color);
-    transition: all 0.3s ease;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(var(--primary-rgb), 0.1);
+    backdrop-filter: blur(10px);
+    transition: transform 0.3s, box-shadow 0.3s;
 }
 
-.notes-section:hover {
+.notes-section:hover, .tasks-section:hover, .performance-section:hover {
     transform: translateY(-5px);
     box-shadow: 0 6px 20px rgba(0,0,0,0.15);
 }
 
-.notes-section h4 {
-    font-size: 1.5rem;
+.notes-section h4, .tasks-section h4, .performance-section h4 {
+    font-size: 1.3rem;
     font-weight: 600;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.2rem;
     color: var(--text-color);
     display: flex;
     align-items: center;
     gap: 10px;
-    transition: color 0.3s ease;
 }
 
-.notes-section h4::before {
+.notes-section h4::before, .tasks-section h4::before, .performance-section h4::before {
     content: "📝";
-    font-size: 1.4rem;
+    font-size: 1.2rem;
 }
 
 #noteInput {
@@ -333,13 +352,14 @@ body {
 }
 
 .note-item {
-    background: linear-gradient(135deg, var(--card-bg), var(--hover-bg));
-    border-left: 4px solid var(--accent-color);
-    border-radius: 12px;
-    padding: 20px;
-    margin: 15px 0;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    transition: all 0.3s ease;
+    background: var(--card-bg);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border: 1px solid rgba(var(--primary-rgb), 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+    animation: fadeIn 0.5s ease-out;
 }
 
 .note-item:hover {
@@ -485,31 +505,12 @@ body {
 }
 
 /* Performance Section Styles */
-.performance-section, .tasks-section {
-    background: var(--card-bg);
-    border-radius: 15px;
-    padding: 25px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    border: 1px solid var(--border-color);
-    transition: all 0.3s ease;
-}
-
-.performance-section:hover, .tasks-section:hover {
+.performance-section:hover {
     transform: translateY(-5px);
     box-shadow: 0 6px 20px rgba(0,0,0,0.15);
 }
 
-.performance-section h4, .tasks-section h4 {
-    font-size: 1.3rem;
-    font-weight: 600;
-    margin-bottom: 1.2rem;
-    color: var(--text-color);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.performance-section h4 i, .tasks-section h4 i {
+.performance-section h4 i {
     font-size: 1.2rem;
     color: var(--primary-color);
 }
@@ -664,22 +665,219 @@ body {
 .btn-primary {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     border: none;
-    box-shadow: 0 2px 8px rgba(67, 97, 238, 0.3);
+    box-shadow: 0 4px 10px rgba(var(--primary-rgb), 0.3);
     transition: all 0.3s ease;
 }
 
 .btn-primary:hover {
+    background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(67, 97, 238, 0.4);
+    box-shadow: 0 6px 15px rgba(var(--primary-rgb), 0.4);
 }
 
 .btn-danger {
-    background: linear-gradient(135deg, var(--danger-color), #b5179e);
+    background: linear-gradient(135deg, var(--danger-color), #d90429);
     border: none;
-    box-shadow: 0 2px 8px rgba(247, 37, 133, 0.3);
+    box-shadow: 0 4px 10px rgba(247, 37, 133, 0.3);
+    transition: all 0.3s ease;
 }
 
 .btn-danger:hover {
+    background: linear-gradient(135deg, #d90429, var(--danger-color));
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(247, 37, 133, 0.4);
+    box-shadow: 0 6px 15px rgba(247, 37, 133, 0.4);
+}
+
+/* Motivational Slideshow Styles */
+.motivational-slideshow-section {
+    background: linear-gradient(135deg, #f72585, #7209b7);
+    padding: 15px 0;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.motivational-quote-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    text-align: center;
+    backdrop-filter: blur(5px);
+}
+
+.motivational-quote-container:hover {
+    transform: scale(1.02);
+}
+
+.motivational-quote-container.paused::after {
+    content: "▶";
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 24px;
+    color: rgba(255,255,255,0.7);
+    animation: pulse 1.5s infinite;
+}
+
+.motivational-quote-text {
+    color: #ffffff;
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.4;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+    transition: opacity 0.3s ease;
+    letter-spacing: 0.5px;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive adjustments for the slideshow */
+@media (max-width: 768px) {
+    .motivational-quote-text {
+        font-size: 1.2rem;
+    }
+    
+    .motivational-slideshow-section {
+        padding: 10px 0;
+    }
+}
+
+@media (max-width: 576px) {
+    .motivational-quote-text {
+        font-size: 1rem;
+    }
+    
+    .motivational-quote-container {
+        padding: 8px 15px;
+    }
+}
+
+@keyframes gradientAnimation {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* About Page Styles */
+.about-section {
+    background: var(--card-bg);
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(var(--primary-rgb), 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.about-section:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+}
+
+.about-content {
+    color: var(--text-color);
+}
+
+.about-content h1 {
+    color: var(--primary-color);
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.about-content h2 {
+    color: var(--secondary-color);
+    font-size: 1.5rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.about-content p {
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.feature-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.feature-item {
+    background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.05), rgba(var(--secondary-rgb), 0.05));
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: 1px solid rgba(var(--primary-rgb), 0.1);
+}
+
+.feature-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+}
+
+.feature-item i {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.feature-item h3 {
+    font-size: 1.2rem;
+    margin-bottom: 0.8rem;
+    color: var(--text-color);
+}
+
+.contact-info {
+    background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.05), rgba(var(--secondary-rgb), 0.05));
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+    border: 1px solid rgba(var(--primary-rgb), 0.1);
+}
+
+.contact-info p {
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.contact-info i {
+    margin-right: 0.8rem;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+@media (max-width: 768px) {
+    .feature-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .about-section {
+        padding: 1.5rem;
+    }
 } 

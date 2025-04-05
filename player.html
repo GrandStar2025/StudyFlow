@@ -42,44 +42,8 @@
                 </div>
             </div>
             <div class="col-lg-4">
-                <!-- Performance Section -->
-                <div class="performance-section mb-4">
-                    <h4><i class="bi bi-graph-up"></i> Your Progress</h4>
-                    <div class="progress-stats">
-                        <div class="stat-card">
-                            <div class="stat-label">Video Progress</div>
-                            <div class="progress">
-                                <div class="progress-bar" id="videoProgress" role="progressbar" style="width: 0%"></div>
-                            </div>
-                            <div class="stat-value" id="videoProgressText">0%</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-label">Study Time Today</div>
-                            <div class="stat-value" id="studyTimeToday">0 min</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-label">Notes Created</div>
-                            <div class="stat-value" id="notesCount">0</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Today's Tasks Section -->
-                <div class="tasks-section mb-4">
-                    <h4><i class="bi bi-check2-square"></i> Today's Tasks</h4>
-                    <div class="task-input-group mb-3">
-                        <input type="text" class="form-control" id="taskInput" placeholder="Add a new task...">
-                        <button class="btn btn-primary mt-2 w-100" id="addTaskBtn">
-                            <i class="bi bi-plus-circle me-2"></i>Add Task
-                        </button>
-                    </div>
-                    <div id="tasksList">
-                        <!-- Tasks will be displayed here -->
-                    </div>
-                </div>
-
-                <!-- Notes Section -->
-                <div class="notes-section">
+                <!-- Study Notes Section -->
+                <div class="notes-section mb-4">
                     <h4>Study Notes</h4>
                     <div class="mb-3">
                         <div class="input-group">
@@ -99,6 +63,42 @@
                     </div>
                     <div id="notesList" class="mt-4">
                         <!-- Notes will be displayed here -->
+                    </div>
+                </div>
+
+                <!-- Today's Tasks Section -->
+                <div class="tasks-section mb-4">
+                    <h4><i class="bi bi-check2-square"></i> Today's Tasks</h4>
+                    <div class="task-input-group mb-3">
+                        <input type="text" class="form-control" id="taskInput" placeholder="Add a new task...">
+                        <button class="btn btn-primary mt-2 w-100" id="addTaskBtn">
+                            <i class="bi bi-plus-circle me-2"></i>Add Task
+                        </button>
+                    </div>
+                    <div id="tasksList">
+                        <!-- Tasks will be displayed here -->
+                    </div>
+                </div>
+
+                <!-- Performance Section -->
+                <div class="performance-section">
+                    <h4><i class="bi bi-graph-up"></i> Your Progress</h4>
+                    <div class="progress-stats">
+                        <div class="stat-card">
+                            <div class="stat-label">Video Progress</div>
+                            <div class="progress">
+                                <div class="progress-bar" id="videoProgress" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <div class="stat-value" id="videoProgressText">0%</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Study Time Today</div>
+                            <div class="stat-value" id="studyTimeToday">0 min</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Notes Created</div>
+                            <div class="stat-value" id="notesCount">0</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -154,6 +154,9 @@
             event.target.playVideo();
             updateProgress();
             loadSavedProgress();
+            
+            // Add to watch history
+            addToWatchHistory();
         }
 
         function onPlayerStateChange(event) {
@@ -528,6 +531,40 @@
         // Make functions available globally
         window.toggleTask = toggleTask;
         window.deleteTask = deleteTask;
+
+        // Add to watch history
+        function addToWatchHistory() {
+            const videoId = new URLSearchParams(window.location.search).get('id');
+            
+            // Get video details from localStorage
+            const lastSearch = JSON.parse(localStorage.getItem('lastSearch') || '{}');
+            const video = lastSearch.results?.find(v => v.id.videoId === videoId) || 
+                         getWatchHistory().find(v => v.id.videoId === videoId);
+            
+            if (video) {
+                // Remove if already exists
+                let watchedVideos = getWatchHistory();
+                watchedVideos = watchedVideos.filter(v => v.id.videoId !== videoId);
+                
+                // Add to beginning of array with current timestamp
+                watchedVideos.unshift({
+                    ...video,
+                    watchedAt: new Date().toISOString()
+                });
+                
+                // Keep only last 50 videos
+                if (watchedVideos.length > 50) {
+                    watchedVideos = watchedVideos.slice(0, 50);
+                }
+                
+                localStorage.setItem('watchHistory', JSON.stringify(watchedVideos));
+            }
+        }
+        
+        function getWatchHistory() {
+            const history = localStorage.getItem('watchHistory');
+            return history ? JSON.parse(history) : [];
+        }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
