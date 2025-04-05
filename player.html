@@ -7,6 +7,141 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+            margin-bottom: 20px;
+            background: #000;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 12px;
+        }
+
+        /* Make sure the player container is hidden until the video loads */
+        #player {
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        #player.loaded {
+            opacity: 1;
+        }
+
+        /* Recording controls styles */
+        .recording-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        .recording-controls button {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .recording-controls button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .recording-controls button i {
+            margin-right: 5px;
+        }
+
+        /* Audio player styles */
+        audio {
+            width: 100%;
+            height: 36px;
+            margin-top: 8px;
+            border-radius: 8px;
+            background-color: rgba(var(--primary-rgb), 0.1);
+        }
+
+        audio::-webkit-media-controls-panel {
+            background-color: rgba(var(--primary-rgb), 0.1);
+        }
+
+        audio::-webkit-media-controls-current-time-display,
+        audio::-webkit-media-controls-time-remaining-display {
+            color: var(--text-color);
+        }
+
+        /* Note item styles for voice notes */
+        .note-item {
+            background: rgba(var(--primary-rgb), 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .note-item:hover {
+            transform: translateX(5px);
+        }
+
+        .note-timestamp {
+            font-size: 0.9rem;
+            color: var(--primary-color);
+            cursor: pointer;
+            margin-bottom: 5px;
+        }
+
+        .note-text {
+            margin-bottom: 8px;
+        }
+
+        .note-delete {
+            color: var(--danger-color);
+            cursor: pointer;
+            float: right;
+            margin-top: 5px;
+        }
+
+        /* Watch history styles */
+        .watch-history-item {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 10px;
+            transition: transform 0.2s;
+        }
+        
+        .watch-history-item:hover {
+            transform: translateX(5px);
+        }
+        
+        .watch-history-thumbnail {
+            width: 80px;
+            height: 45px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        
+        .watch-history-info {
+            max-width: calc(100% - 120px);
+        }
+        
+        .watch-history-info h6 {
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg">
@@ -18,10 +153,6 @@
                 <a href="index.html" class="nav-link">
                     <i class="bi bi-house-door"></i>
                     Home
-                </a>
-                <a href="history.html" class="nav-link">
-                    <i class="bi bi-clock-history"></i>
-                    Watch History
                 </a>
             </div>
             <div class="theme-switch-wrapper ms-auto">
@@ -38,7 +169,7 @@
         <div class="row">
             <div class="col-lg-8">
                 <div class="video-container">
-                    <div id="youtube-player"></div>
+                    <div id="player"></div>
                 </div>
             </div>
             <div class="col-lg-4">
@@ -101,45 +232,149 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Watch History Section -->
+                <div class="watch-history-section mt-4">
+                    <h4><i class="bi bi-clock-history"></i> Recently Watched</h4>
+                    <div id="watchHistoryList" class="mt-3">
+                        <!-- Watch history will be displayed here -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <script>
-        // Initialize YouTube Player
-        var tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        var firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getDatabase, ref, set, get } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js';
+        import {
+            saveVideoProgress,
+            getVideoProgress,
+            saveNotes,
+            getNotes,
+            saveTasks,
+            getTasks,
+            updateStudyTime,
+            getStudyTime,
+            markVideoCompleted,
+            isVideoCompleted,
+            addToWatchHistory,
+            getLastSearch,
+            getWatchHistory
+        } from './database.js';
 
-        var player;
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD33YiLLyTxlIycnHcArDKbgxvK_se27eA",
+            authDomain: "studyflow-6ed25.firebaseapp.com",
+            databaseURL: "https://studyflow-6ed25-default-rtdb.firebaseio.com",
+            projectId: "studyflow-6ed25",
+            storageBucket: "studyflow-6ed25.firebasestorage.app",
+            messagingSenderId: "562903369542",
+            appId: "1:562903369542:web:3f80ceb14d749870fc0747",
+            measurementId: "G-TD7DS8YKSB"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+        let currentUser = null;
+
+        // YouTube player variables
+        let player;
         let notes = [];
-        let mediaRecorder;
-        let audioChunks = [];
-        let isRecording = false;
-        let editingNoteId = null;
+        let tasks = [];
 
-        function onYouTubeIframeAPIReady() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const videoId = urlParams.get('id');
+        // Check authentication state
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                // Initialize theme
+                await initTheme();
+                // We'll initialize the player when the API is ready
+                if (window.YT && window.YT.Player) {
+                    await initializePlayer();
+                }
+                await loadNotes();
+                await loadTasks();
+                startPerformanceTracking();
+            } else {
+                window.location.href = 'signin.html';
+            }
+        });
+
+        // Theme switching functionality
+        const themeSwitch = document.getElementById('themeSwitch');
+
+        async function initTheme() {
+            if (!currentUser) return;
             
+            try {
+                const settingsRef = ref(db, `users/${currentUser.uid}/settings`);
+                const snapshot = await get(settingsRef);
+                const settings = snapshot.val() || {};
+                const theme = settings.theme || 'light';
+                
+                document.documentElement.setAttribute('data-bs-theme', theme);
+                themeSwitch.checked = theme === 'dark';
+            } catch (error) {
+                console.error('Error initializing theme:', error);
+                document.documentElement.setAttribute('data-bs-theme', 'light');
+                themeSwitch.checked = false;
+            }
+        }
+
+        async function toggleTheme() {
+            if (!currentUser) return;
+            
+            try {
+                const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                
+                // Update theme immediately
+                document.documentElement.setAttribute('data-bs-theme', newTheme);
+                
+                // Save to Firebase
+                const settingsRef = ref(db, `users/${currentUser.uid}/settings`);
+                const snapshot = await get(settingsRef);
+                const settings = snapshot.val() || {};
+                settings.theme = newTheme;
+                await set(settingsRef, settings);
+            } catch (error) {
+                console.error('Error toggling theme:', error);
+            }
+        }
+
+        // Add theme switch event listener
+        themeSwitch.addEventListener('change', toggleTheme);
+
+        // Initialize YouTube player when API is ready
+        window.onYouTubeIframeAPIReady = async function() {
+            if (currentUser) {
+                await initializePlayer();
+            }
+        };
+
+        // Initialize YouTube player
+        async function initializePlayer() {
+            const videoId = new URLSearchParams(window.location.search).get('id');
             if (!videoId) {
                 alert('No video ID provided!');
                 return;
             }
 
-            player = new YT.Player('youtube-player', {
-                height: '100%',
-                width: '100%',
+            player = new YT.Player('player', {
+                height: '360',
+                width: '640',
                 videoId: videoId,
                 playerVars: {
-                    'autoplay': 1,
-                    'modestbranding': 1,
+                    'playsinline': 1,
                     'rel': 0,
-                    'showinfo': 0,
-                    'controls': 1,
-                    'fs': 1,
-                    'playsinline': 1
+                    'modestbranding': 1,
+                    'controls': 1
                 },
                 events: {
                     'onReady': onPlayerReady,
@@ -150,28 +385,21 @@
         }
 
         function onPlayerReady(event) {
-            // Start progress tracking
-            event.target.playVideo();
-            updateProgress();
+            // Make the player visible once it's ready
+            document.getElementById('player').classList.add('loaded');
+            // Load saved progress after player is ready
             loadSavedProgress();
-            
-            // Add to watch history
-            addToWatchHistory();
         }
 
-        function onPlayerStateChange(event) {
+        async function onPlayerStateChange(event) {
             if (event.data === YT.PlayerState.ENDED) {
                 // Video ended
                 document.getElementById('videoProgress').style.width = '100%';
                 document.getElementById('videoProgressText').textContent = '100%';
                 
-                // Save completion in localStorage
+                // Mark video as completed
                 const videoId = new URLSearchParams(window.location.search).get('id');
-                const completedVideos = JSON.parse(localStorage.getItem('completedVideos') || '[]');
-                if (!completedVideos.includes(videoId)) {
-                    completedVideos.push(videoId);
-                    localStorage.setItem('completedVideos', JSON.stringify(completedVideos));
-                }
+                await markVideoCompleted(currentUser.uid, videoId);
             } else if (event.data === YT.PlayerState.PLAYING) {
                 // Video is playing
                 startProgressTracking();
@@ -192,7 +420,7 @@
             progressInterval = setInterval(updateProgress, 1000);
         }
 
-        function updateProgress() {
+        async function updateProgress() {
             if (player && player.getCurrentTime && player.getDuration) {
                 const currentTime = player.getCurrentTime();
                 const duration = player.getDuration();
@@ -201,52 +429,63 @@
                 document.getElementById('videoProgress').style.width = `${progress}%`;
                 document.getElementById('videoProgressText').textContent = `${Math.round(progress)}%`;
 
-                // Save progress in localStorage
+                // Save progress
                 const videoId = new URLSearchParams(window.location.search).get('id');
-                const videoProgress = {
-                    id: videoId,
+                const progressData = {
                     currentTime: currentTime,
                     duration: duration,
-                    progress: progress,
-                    lastUpdated: new Date().toISOString()
+                    progress: progress
                 };
-                localStorage.setItem(`videoProgress_${videoId}`, JSON.stringify(videoProgress));
+                await saveVideoProgress(currentUser.uid, videoId, progressData);
             }
         }
 
-        // Load saved progress when video loads
-        function loadSavedProgress() {
+        // Load saved progress
+        async function loadSavedProgress() {
             const videoId = new URLSearchParams(window.location.search).get('id');
-            const savedProgress = localStorage.getItem(`videoProgress_${videoId}`);
-            if (savedProgress) {
-                const { currentTime, progress } = JSON.parse(savedProgress);
-                if (currentTime && !isNaN(currentTime)) {
-                    player.seekTo(currentTime, true);
+            const progress = await getVideoProgress(currentUser.uid, videoId);
+            
+            if (progress && progress.currentTime) {
+                // Ensure the player is ready before seeking
+                if (player && player.seekTo) {
+                    player.seekTo(progress.currentTime, true);
+                    // Start playing from the saved position
+                    player.playVideo();
+                    // Update the progress bar
+                    document.getElementById('videoProgress').style.width = `${progress.progress}%`;
+                    document.getElementById('videoProgressText').textContent = `${Math.round(progress.progress)}%`;
                 }
-                document.getElementById('videoProgress').style.width = `${progress}%`;
-                document.getElementById('videoProgressText').textContent = `${Math.round(progress)}%`;
             }
         }
 
         // Notes functionality
-        document.getElementById('addNoteBtn').addEventListener('click', () => {
+        async function addNote() {
             const noteText = document.getElementById('noteInput').value.trim();
+            const timestamp = player.getCurrentTime();
+            
             if (noteText) {
-                const currentTime = player.getCurrentTime();
-                addNote(noteText, currentTime);
+                const note = {
+                    id: Date.now(),
+                    text: noteText,
+                    timestamp: timestamp,
+                    formattedTime: formatTime(timestamp)
+                };
+                
+                notes.push(note);
                 document.getElementById('noteInput').value = '';
+                
+                // Save notes
+                const videoId = new URLSearchParams(window.location.search).get('id');
+                await saveNotes(currentUser.uid, videoId, notes);
+                
+                displayNotes();
             }
-        });
+        }
 
-        function addNote(text, time) {
-            const note = {
-                id: Date.now(),
-                text: text,
-                time: time,
-                timestamp: new Date().toISOString()
-            };
-            notes.push(note);
-            saveNotes();
+        async function deleteNote(noteId) {
+            notes = notes.filter(note => note.id !== noteId);
+            const videoId = new URLSearchParams(window.location.search).get('id');
+            await saveNotes(currentUser.uid, videoId, notes);
             displayNotes();
         }
 
@@ -254,243 +493,75 @@
             const notesList = document.getElementById('notesList');
             notesList.innerHTML = '';
             
-            notes.sort((a, b) => a.time - b.time).forEach(note => {
+            notes.forEach(note => {
                 const noteElement = document.createElement('div');
                 noteElement.className = 'note-item';
-                noteElement.innerHTML = `
-                    <div class="note-time">
-                        <i class="bi bi-clock"></i>
-                        ${formatTime(note.time)}
-                    </div>
-                    <div class="note-text" id="note-text-${note.id}">${note.text}</div>
-                    ${note.audioUrl ? `
-                        <audio class="audio-player" controls>
-                            <source src="${note.audioUrl}" type="audio/wav">
+                
+                let audioPlayer = '';
+                if (note.audioData) {
+                    audioPlayer = `
+                        <audio controls class="mt-2 w-100">
+                            <source src="${note.audioData}" type="audio/wav">
                             Your browser does not support the audio element.
                         </audio>
-                    ` : ''}
-                    <div class="note-actions">
-                        <button class="btn btn-sm btn-outline-primary" onclick="seekToTime(${note.time})">
-                            <i class="bi bi-play-circle me-1"></i>Jump to time
-                        </button>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="editNote(${note.id})">
-                            <i class="bi bi-pencil me-1"></i>Edit
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteNote(${note.id})">
-                            <i class="bi bi-trash me-1"></i>Delete
-                        </button>
+                    `;
+                }
+                
+                noteElement.innerHTML = `
+                    <div class="note-timestamp" onclick="player.seekTo(${note.timestamp}, true)">
+                        ${note.formattedTime}
                     </div>
+                    <div class="note-text">${note.text}</div>
+                    ${audioPlayer}
+                    <i class="bi bi-trash note-delete" onclick="deleteNote(${note.id})"></i>
                 `;
                 notesList.appendChild(noteElement);
             });
         }
 
-        function formatTime(seconds) {
-            const minutes = Math.floor(seconds / 60);
-            const remainingSeconds = Math.floor(seconds % 60);
-            return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-        }
-
-        function seekToTime(time) {
-            player.seekTo(time);
-        }
-
-        function editNote(noteId) {
-            if (editingNoteId === noteId) {
-                // Save the edit
-                const noteTextElement = document.getElementById(`note-text-${noteId}`);
-                const newText = noteTextElement.value;
-                const noteIndex = notes.findIndex(note => note.id === noteId);
-                if (noteIndex !== -1) {
-                    notes[noteIndex].text = newText;
-                    saveNotes();
-                    displayNotes();
-                }
-                editingNoteId = null;
-            } else {
-                // Start editing
-                const noteTextElement = document.getElementById(`note-text-${noteId}`);
-                const currentText = noteTextElement.textContent;
-                noteTextElement.innerHTML = `<textarea class="form-control note-text editing">${currentText}</textarea>`;
-                editingNoteId = noteId;
-            }
-        }
-
-        function deleteNote(noteId) {
-            if (confirm('Are you sure you want to delete this note?')) {
-                notes = notes.filter(note => note.id !== noteId);
-                saveNotes();
-                displayNotes();
-            }
-        }
-
-        // Voice recording functionality
-        const recordBtn = document.getElementById('recordBtn');
-        const stopBtn = document.getElementById('stopBtn');
-
-        recordBtn.addEventListener('click', startRecording);
-        stopBtn.addEventListener('click', stopRecording);
-
-        async function startRecording() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-                
-                mediaRecorder.ondataavailable = (event) => {
-                    audioChunks.push(event.data);
-                };
-
-                mediaRecorder.onstop = () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                    const audioUrl = URL.createObjectURL(audioBlob);
-                    const currentTime = player.getCurrentTime();
-                    
-                    // Add audio note
-                    const note = {
-                        id: Date.now(),
-                        text: 'Voice Note',
-                        time: currentTime,
-                        timestamp: new Date().toISOString(),
-                        audioUrl: audioUrl
-                    };
-                    notes.push(note);
-                    saveNotes();
-                    displayNotes();
-                    
-                    audioChunks = [];
-                };
-
-                mediaRecorder.start();
-                isRecording = true;
-                recordBtn.disabled = true;
-                stopBtn.disabled = false;
-            } catch (error) {
-                console.error('Error accessing microphone:', error);
-                alert('Error accessing microphone. Please ensure you have granted microphone permissions.');
-            }
-        }
-
-        function stopRecording() {
-            if (mediaRecorder && isRecording) {
-                mediaRecorder.stop();
-                isRecording = false;
-                recordBtn.disabled = false;
-                stopBtn.disabled = true;
-            }
-        }
-
-        // Local storage functionality
-        function saveNotes() {
+        async function loadNotes() {
             const videoId = new URLSearchParams(window.location.search).get('id');
-            localStorage.setItem(`studyNotes_${videoId}`, JSON.stringify(notes));
-        }
-
-        function loadNotes() {
-            const videoId = new URLSearchParams(window.location.search).get('id');
-            const savedNotes = localStorage.getItem(`studyNotes_${videoId}`);
-            if (savedNotes) {
-                notes = JSON.parse(savedNotes);
-                displayNotes();
-            } else {
-                notes = []; // Initialize empty notes array for new video
-                displayNotes();
-            }
-        }
-
-        // Load saved notes when page loads
-        loadNotes();
-
-        // Load notes on page load
-        loadNotes();
+            notes = await getNotes(currentUser.uid, videoId) || [];
         displayNotes();
-
-        // Theme switching functionality
-        const themeSwitch = document.getElementById('themeSwitch');
-
-        function initTheme() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-bs-theme', savedTheme);
-            themeSwitch.checked = savedTheme === 'dark';
         }
-
-        function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-bs-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            
-            document.documentElement.setAttribute('data-bs-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-        }
-
-        themeSwitch.addEventListener('change', toggleTheme);
-        initTheme();
-
-        // Performance tracking
-        let startTime = Date.now();
-        let studyTimeToday = parseInt(localStorage.getItem('studyTimeToday') || '0');
-        let lastDate = localStorage.getItem('lastStudyDate');
-        
-        // Reset study time if it's a new day
-        const today = new Date().toDateString();
-        if (lastDate !== today) {
-            studyTimeToday = 0;
-            localStorage.setItem('lastStudyDate', today);
-        }
-
-        // Update performance metrics every minute
-        setInterval(() => {
-            // Update study time
-            const currentTime = Date.now();
-            const timeSpent = Math.floor((currentTime - startTime) / 60000); // Convert to minutes
-            studyTimeToday += 1;
-            localStorage.setItem('studyTimeToday', studyTimeToday.toString());
-            document.getElementById('studyTimeToday').textContent = `${studyTimeToday} min`;
-
-            // Update notes count for current video
-            const videoId = new URLSearchParams(window.location.search).get('id');
-            const currentVideoNotes = JSON.parse(localStorage.getItem(`studyNotes_${videoId}`) || '[]');
-            document.getElementById('notesCount').textContent = currentVideoNotes.length.toString();
-        }, 60000);
 
         // Tasks functionality
-        let tasks = JSON.parse(localStorage.getItem('todayTasks') || '[]');
-        const taskInput = document.getElementById('taskInput');
-        const addTaskBtn = document.getElementById('addTaskBtn');
-        const tasksList = document.getElementById('tasksList');
-
-        function addTask(text) {
+        async function addTask(text) {
             const task = {
                 id: Date.now(),
                 text: text,
                 completed: false,
                 date: new Date().toDateString()
             };
+            
             tasks.push(task);
-            saveTasks();
+            await saveTasks(currentUser.uid, tasks);
             displayTasks();
-            taskInput.value = '';
+            document.getElementById('taskInput').value = '';
         }
 
-        function toggleTask(taskId) {
+        async function toggleTask(taskId) {
             const task = tasks.find(t => t.id === taskId);
             if (task) {
                 task.completed = !task.completed;
-                saveTasks();
+                await saveTasks(currentUser.uid, tasks);
                 displayTasks();
             }
         }
 
-        function deleteTask(taskId) {
+        async function deleteTask(taskId) {
             tasks = tasks.filter(t => t.id !== taskId);
-            saveTasks();
+            await saveTasks(currentUser.uid, tasks);
             displayTasks();
         }
 
-        function saveTasks() {
-            localStorage.setItem('todayTasks', JSON.stringify(tasks));
+        async function loadTasks() {
+            tasks = await getTasks(currentUser.uid) || [];
+            displayTasks();
         }
 
         function displayTasks() {
-            // Filter tasks for today
+            const tasksList = document.getElementById('tasksList');
             const todayTasks = tasks.filter(task => task.date === new Date().toDateString());
             
             tasksList.innerHTML = '';
@@ -508,63 +579,197 @@
             });
         }
 
-        // Initialize tasks
-        displayTasks();
+        // Performance tracking
+        let startTime = Date.now();
+        let studyTimeToday = 0;
 
-        // Add task event listeners
-        addTaskBtn.addEventListener('click', () => {
-            const text = taskInput.value.trim();
-            if (text) {
-                addTask(text);
+        async function startPerformanceTracking() {
+            studyTimeToday = await getStudyTime(currentUser.uid);
+            document.getElementById('studyTimeToday').textContent = `${studyTimeToday} min`;
+
+            // Update performance metrics every minute
+            setInterval(async () => {
+                studyTimeToday = await updateStudyTime(currentUser.uid, 1);
+                document.getElementById('studyTimeToday').textContent = `${studyTimeToday} min`;
+
+                // Update notes count
+                const videoId = new URLSearchParams(window.location.search).get('id');
+                document.getElementById('notesCount').textContent = notes.length.toString();
+            }, 60000);
+        }
+
+        // Add to watch history
+        async function addToWatchHistoryAndLoadVideo() {
+            const videoId = new URLSearchParams(window.location.search).get('id');
+            const lastSearch = await getLastSearch(currentUser.uid);
+            const video = lastSearch?.results?.find(v => v.id.videoId === videoId);
+            
+            if (video) {
+                await addToWatchHistory(currentUser.uid, video);
+                await displayWatchHistory();
+            }
+        }
+
+        // Display watch history
+        async function displayWatchHistory() {
+            const watchHistoryList = document.getElementById('watchHistoryList');
+            const watchHistory = await getWatchHistory(currentUser.uid);
+            
+            if (!watchHistory || watchHistory.length === 0) {
+                watchHistoryList.innerHTML = `
+                    <div class="text-center text-muted">
+                        <p>No watch history yet</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Display only the last 5 watched videos
+            const recentVideos = watchHistory.slice(0, 5);
+            watchHistoryList.innerHTML = recentVideos.map(video => `
+                <div class="watch-history-item mb-3">
+                    <div class="d-flex align-items-center">
+                        <img src="${video.snippet.thumbnails.default.url}" 
+                             alt="${video.snippet.title}" 
+                             class="watch-history-thumbnail me-2">
+                        <div class="watch-history-info flex-grow-1">
+                            <h6 class="mb-1">${video.snippet.title}</h6>
+                            <small class="text-muted">Watched on ${new Date(video.watchedAt).toLocaleDateString()}</small>
+                        </div>
+                        <a href="player.html?id=${video.id.videoId}" class="btn btn-sm btn-primary">
+                            <i class="bi bi-play-fill"></i>
+                        </a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Helper function to format time
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            seconds = Math.floor(seconds % 60);
+            return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Make functions available globally
+        window.addNote = addNote;
+        window.deleteNote = deleteNote;
+        window.addTask = addTask;
+        window.toggleTask = toggleTask;
+        window.deleteTask = deleteTask;
+
+        // Voice Recording functionality
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+
+        const recordBtn = document.getElementById('recordBtn');
+        const stopBtn = document.getElementById('stopBtn');
+
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    const timestamp = player.getCurrentTime();
+                    
+                    // Convert audio to base64
+                    const reader = new FileReader();
+                    reader.readAsDataURL(audioBlob);
+                    reader.onloadend = async () => {
+                        const base64Audio = reader.result;
+                        
+                        // Create note with audio
+                        const note = {
+                            id: Date.now(),
+                            text: '🎤 Voice Note',
+                            timestamp: timestamp,
+                            formattedTime: formatTime(timestamp),
+                            audioData: base64Audio
+                        };
+                        
+                        notes.push(note);
+                        
+                        // Save notes
+                        const videoId = new URLSearchParams(window.location.search).get('id');
+                        await saveNotes(currentUser.uid, videoId, notes);
+                        
+                        displayNotes();
+                    };
+                    
+                    audioChunks = [];
+                    recordBtn.innerHTML = '<i class="bi bi-mic-fill"></i> Start Recording';
+                    recordBtn.classList.remove('btn-danger');
+                    recordBtn.classList.add('btn-primary');
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                recordBtn.innerHTML = '<i class="bi bi-record-circle"></i> Recording...';
+                recordBtn.classList.remove('btn-primary');
+                recordBtn.classList.add('btn-danger');
+                stopBtn.disabled = false;
+            } catch (error) {
+                console.error('Error accessing microphone:', error);
+                alert('Error accessing microphone. Please ensure you have granted microphone permissions.');
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+                isRecording = false;
+                stopBtn.disabled = true;
+                
+                // Stop all audio tracks
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+            }
+        }
+
+        // Add recording event listeners
+        recordBtn.addEventListener('click', () => {
+            if (!isRecording) {
+                startRecording();
             }
         });
 
-        taskInput.addEventListener('keypress', (e) => {
+        stopBtn.addEventListener('click', stopRecording);
+
+        // Add other event listeners
+        document.getElementById('noteInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                const text = taskInput.value.trim();
+                addNote();
+            }
+        });
+
+        document.getElementById('addNoteBtn').addEventListener('click', () => {
+            addNote();
+        });
+
+        document.getElementById('taskInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const text = e.target.value.trim();
                 if (text) {
                     addTask(text);
                 }
             }
         });
 
-        // Make functions available globally
-        window.toggleTask = toggleTask;
-        window.deleteTask = deleteTask;
-
-        // Add to watch history
-        function addToWatchHistory() {
-            const videoId = new URLSearchParams(window.location.search).get('id');
-            
-            // Get video details from localStorage
-            const lastSearch = JSON.parse(localStorage.getItem('lastSearch') || '{}');
-            const video = lastSearch.results?.find(v => v.id.videoId === videoId) || 
-                         getWatchHistory().find(v => v.id.videoId === videoId);
-            
-            if (video) {
-                // Remove if already exists
-                let watchedVideos = getWatchHistory();
-                watchedVideos = watchedVideos.filter(v => v.id.videoId !== videoId);
-                
-                // Add to beginning of array with current timestamp
-                watchedVideos.unshift({
-                    ...video,
-                    watchedAt: new Date().toISOString()
-                });
-                
-                // Keep only last 50 videos
-                if (watchedVideos.length > 50) {
-                    watchedVideos = watchedVideos.slice(0, 50);
-                }
-                
-                localStorage.setItem('watchHistory', JSON.stringify(watchedVideos));
+        document.getElementById('addTaskBtn').addEventListener('click', () => {
+            const text = document.getElementById('taskInput').value.trim();
+            if (text) {
+                addTask(text);
             }
-        }
-        
-        function getWatchHistory() {
-            const history = localStorage.getItem('watchHistory');
-            return history ? JSON.parse(history) : [];
-        }
+        });
+
+        // Load video and add to watch history
+        addToWatchHistoryAndLoadVideo();
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

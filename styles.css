@@ -53,7 +53,10 @@ body {
     box-shadow: 0 4px 20px rgba(0,0,0,0.15);
     transition: background-color 0.3s;
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(255,255,255,0.1);
+    position: relative;
+    z-index: 1050;
 }
 
 .navbar-brand {
@@ -690,24 +693,29 @@ body {
 
 /* Motivational Slideshow Styles */
 .motivational-slideshow-section {
-    background: linear-gradient(135deg, #f72585, #7209b7);
+    background: linear-gradient(135deg, rgba(247, 37, 133, 0.9), rgba(114, 9, 183, 0.9));
     padding: 15px 0;
     margin-bottom: 20px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     position: relative;
     overflow: hidden;
     border-bottom: 1px solid rgba(255,255,255,0.1);
+    z-index: 1;
 }
 
 .motivational-quote-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 10px 20px;
+    padding: 15px 30px;
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
     text-align: center;
     backdrop-filter: blur(5px);
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .motivational-quote-container:hover {
@@ -729,10 +737,13 @@ body {
     color: #ffffff;
     font-size: 1.5rem;
     font-weight: 600;
-    line-height: 1.4;
+    line-height: 1.6;
     text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
     transition: opacity 0.3s ease;
     letter-spacing: 0.5px;
+    margin: 0;
+    padding: 0;
+    width: 100%;
 }
 
 @keyframes pulse {
@@ -750,20 +761,28 @@ body {
 @media (max-width: 768px) {
     .motivational-quote-text {
         font-size: 1.2rem;
+        line-height: 1.4;
     }
     
     .motivational-slideshow-section {
         padding: 10px 0;
+    }
+
+    .motivational-quote-container {
+        padding: 10px 20px;
+        min-height: 50px;
     }
 }
 
 @media (max-width: 576px) {
     .motivational-quote-text {
         font-size: 1rem;
+        line-height: 1.3;
     }
     
     .motivational-quote-container {
         padding: 8px 15px;
+        min-height: 40px;
     }
 }
 
@@ -912,52 +931,65 @@ body {
 }
 
 .dropdown-menu {
-    display: none;
-    position: absolute;
-    top: 100%;
-    right: 0;
-    background: var(--card-bg);
+    background: rgba(var(--card-bg), 0.9) !important;
+    backdrop-filter: blur(10px);
     border: 1px solid rgba(var(--primary-rgb), 0.1);
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    padding: 8px 0;
-    min-width: 180px;
-    z-index: 1000;
-}
-
-.user-profile:hover .dropdown-menu {
-    display: block;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    z-index: 1050;
 }
 
 .dropdown-item {
-    display: flex;
-    align-items: center;
-    padding: 8px 16px;
     color: var(--text-color);
-    background: none;
-    border: none;
-    width: 100%;
-    text-align: left;
-    cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.3s ease;
+    padding: 8px 16px;
 }
 
 .dropdown-item:hover {
-    background-color: rgba(var(--primary-rgb), 0.1);
+    background: rgba(var(--primary-rgb), 0.2);
+    color: var(--primary-color);
 }
 
-#signInButton {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    border-radius: 20px;
-    transition: transform 0.3s, box-shadow 0.3s;
+.dropdown-item.text-danger:hover {
+    background: rgba(var(--danger-rgb), 0.2);
 }
 
-#signInButton:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.2);
+.dropdown-divider {
+    border-top: 1px solid rgba(var(--primary-rgb), 0.1);
+}
+
+#profileDropdown .nav-link {
+    transition: all 0.3s ease;
+}
+
+#profileDropdown .nav-link:hover {
+    background: rgba(var(--primary-rgb), 0.1);
+}
+
+[data-bs-theme="dark"] .dropdown-menu {
+    background: rgba(43, 45, 66, 0.9) !important;
+    backdrop-filter: blur(10px);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-bs-theme="dark"] .dropdown-item {
+    color: var(--dark-text-color);
+}
+
+[data-bs-theme="dark"] .dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+[data-bs-theme="dark"] .dropdown-divider {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+#profileDropdown .profile-pic {
+    border: 2px solid var(--primary-color);
+    transition: transform 0.3s ease;
+}
+
+#profileDropdown:hover .profile-pic {
+    transform: scale(1.05);
 }
 
 /* Notification Styles */
@@ -1005,4 +1037,14 @@ body {
     to {
         opacity: 0;
     }
+}
+
+#profileDropdown {
+    position: relative;
+    z-index: 1050;
+}
+
+.navbar-nav {
+    position: relative;
+    z-index: 1050;
 } 

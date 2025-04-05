@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Study Flow</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .profile-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(var(--primary-rgb), 0.1);
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .profile-picture {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 1rem;
+            border: 4px solid var(--primary-color);
+        }
+
+        .profile-name {
+            font-size: 1.75rem;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-email {
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        .profile-section {
+            margin-bottom: 2rem;
+        }
+
+        .profile-section-title {
+            font-size: 1.25rem;
+            color: var(--text-color);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid rgba(var(--primary-rgb), 0.1);
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(var(--primary-rgb), 0.05);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .profile-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .btn-edit-profile {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .btn-edit-profile:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.2);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="bi bi-book-half"></i> Study Flow
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="notes.html">Notes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="tasks.html">Tasks</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="performance.html">Performance</a>
+                    </li>
+                </ul>
+                <div class="navbar-nav ms-auto">
+                    <div class="nav-item dropdown" id="profileDropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="background: rgba(255, 255, 255, 0.1); padding: 8px 16px; border-radius: 50px;">
+                            <img id="userProfilePic" src="https://via.placeholder.com/32" alt="Profile" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover; border: 2px solid var(--primary-color);">
+                            <span id="userName" class="d-none d-md-inline" style="color: var(--text-color); font-weight: 500;">Sign In</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" style="margin-top: 10px; border-radius: 12px; border: 1px solid rgba(var(--primary-rgb), 0.1); box-shadow: 0 4px 16px rgba(0,0,0,0.1);">
+                            <li><a class="dropdown-item py-2" href="profile.html"><i class="bi bi-person me-2"></i>My Profile</a></li>
+                            <li><a class="dropdown-item py-2" href="settings.html"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item py-2 text-danger" href="#" id="signOutButton"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Profile Content -->
+    <div class="container">
+        <div class="profile-container">
+            <div class="profile-header">
+                <img id="profilePicture" src="https://via.placeholder.com/150" alt="Profile Picture" class="profile-picture">
+                <h1 id="profileName" class="profile-name">User Name</h1>
+                <p id="profileEmail" class="profile-email">user@example.com</p>
+            </div>
+
+            <div class="profile-stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="notesCount">0</div>
+                    <div class="stat-label">Notes Created</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="tasksCount">0</div>
+                    <div class="stat-label">Tasks Completed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="studyHours">0</div>
+                    <div class="stat-label">Study Hours</div>
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <h2 class="profile-section-title">Recent Activity</h2>
+                <div class="list-group">
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Created a new note</h6>
+                                <small class="text-muted">2 hours ago</small>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">Note</span>
+                        </div>
+                    </div>
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Completed a task</h6>
+                                <small class="text-muted">5 hours ago</small>
+                            </div>
+                            <span class="badge bg-success rounded-pill">Task</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-actions">
+                <button class="btn btn-edit-profile">
+                    <i class="bi bi-pencil-square me-2"></i>Edit Profile
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js';
+        import { 
+            getAuth, 
+            signOut,
+            onAuthStateChanged 
+        } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD33YiLLyTxlIycnHcArDKbgxvK_se27eA",
+            authDomain: "studyflow-6ed25.firebaseapp.com",
+            databaseURL: "https://studyflow-6ed25-default-rtdb.firebaseio.com",
+            projectId: "studyflow-6ed25",
+            storageBucket: "studyflow-6ed25.firebasestorage.app",
+            messagingSenderId: "562903369542",
+            appId: "1:562903369542:web:3f80ceb14d749870fc0747",
+            measurementId: "G-TD7DS8YKSB"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+
+        // Update UI based on auth state
+        onAuthStateChanged(auth, (user) => {
+            const profilePic = document.getElementById('userProfilePic');
+            const userName = document.getElementById('userName');
+            const profileDropdown = document.getElementById('profileDropdown');
+            const profilePicture = document.getElementById('profilePicture');
+            const profileName = document.getElementById('profileName');
+            const profileEmail = document.getElementById('profileEmail');
+            
+            if (user) {
+                // User is signed in
+                const photoURL = user.photoURL || 'https://via.placeholder.com/150';
+                profilePic.src = photoURL;
+                profilePicture.src = photoURL;
+                userName.textContent = user.displayName || 'User';
+                profileName.textContent = user.displayName || 'User';
+                profileEmail.textContent = user.email || 'No email provided';
+                profileDropdown.classList.remove('d-none');
+            } else {
+                // User is signed out
+                window.location.href = 'signin.html';
+            }
+        });
+
+        // Sign out functionality
+        document.getElementById('signOutButton').addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                showNotification('Successfully signed out!', 'success');
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Error signing out:', error);
+                showNotification('Error signing out. Please try again.', 'error');
+            }
+        });
+
+        // Show notification function
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html> 

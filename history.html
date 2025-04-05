@@ -52,99 +52,80 @@
         </div>
     </div>
 
-    <script>
-        // Theme switching functionality
-        const themeSwitch = document.getElementById('themeSwitch');
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getWatchHistory, clearWatchHistory } from './database.js';
 
-        function initTheme() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-bs-theme', savedTheme);
-            themeSwitch.checked = savedTheme === 'dark';
-        }
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD33YiLLyTxlIycnHcArDKbgxvK_se27eA",
+            authDomain: "studyflow-6ed25.firebaseapp.com",
+            databaseURL: "https://studyflow-6ed25-default-rtdb.firebaseio.com",
+            projectId: "studyflow-6ed25",
+            storageBucket: "studyflow-6ed25.firebasestorage.app",
+            messagingSenderId: "562903369542",
+            appId: "1:562903369542:web:3f80ceb14d749870fc0747",
+            measurementId: "G-TD7DS8YKSB"
+        };
 
-        function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-bs-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        let currentUser = null;
+
+        // Check authentication state
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                await displayWatchHistory();
+            } else {
+                window.location.href = 'signin.html';
+            }
+        });
+
+        // Display watch history
+        async function displayWatchHistory() {
+            const watchHistory = await getWatchHistory(currentUser.uid);
+            const watchHistoryContainer = document.getElementById('watchHistory');
             
-            document.documentElement.setAttribute('data-bs-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-        }
-
-        themeSwitch.addEventListener('change', toggleTheme);
-        initTheme();
-
-        // Watch history functionality
-        function getWatchHistory() {
-            const history = localStorage.getItem('watchHistory');
-            return history ? JSON.parse(history) : [];
-        }
-
-        function formatWatchDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        }
-
-        function displayWatchHistory() {
-            const watchedVideos = getWatchHistory();
-            const watchHistoryElement = document.getElementById('watchHistory');
-            watchHistoryElement.innerHTML = '';
-            
-            if (watchedVideos.length === 0) {
-                watchHistoryElement.innerHTML = `
+            if (!watchHistory || watchHistory.length === 0) {
+                watchHistoryContainer.innerHTML = `
                     <div class="col-12 text-center">
-                        <p class="text-muted">No watched videos yet</p>
+                        <p class="text-muted">No watch history yet.</p>
                     </div>
                 `;
                 return;
             }
-            
-            watchedVideos.forEach((video, index) => {
-                const videoCard = document.createElement('div');
-                videoCard.className = 'col-md-4 col-sm-6 mb-4';
-                videoCard.innerHTML = `
-                    <div class="video-card">
-                        <div class="video-card-content" onclick="openVideo('${video.id.videoId}')">
-                            <img src="${video.snippet.thumbnails.medium.url}" alt="${video.snippet.title}" class="video-thumbnail">
-                            <div class="video-info">
-                                <h5 class="video-title">${video.snippet.title}</h5>
-                                <p class="video-channel">${video.snippet.channelTitle}</p>
-                                <p class="video-stats">
-                                    <small class="text-muted">Watched on ${formatWatchDate(video.watchedAt)}</small>
-                                </p>
-                            </div>
-                        </div>
-                        <div class="video-actions">
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteFromWatchHistory(${index})">
-                                <i class="bi bi-trash"></i> Remove
-                            </button>
+
+            watchHistoryContainer.innerHTML = watchHistory.map(video => `
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <img src="${video.snippet.thumbnails.medium.url}" class="card-img-top" alt="${video.snippet.title}">
+                        <div class="card-body">
+                            <h5 class="card-title">${video.snippet.title}</h5>
+                            <p class="card-text text-muted">${video.snippet.channelTitle}</p>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    Watched on ${new Date(video.watchedAt).toLocaleDateString()}
+                                </small>
+                            </p>
+                            <a href="player.html?id=${video.id.videoId}" class="btn btn-primary">
+                                <i class="bi bi-play-circle me-1"></i>Watch Again
+                            </a>
                         </div>
                     </div>
-                `;
-                watchHistoryElement.appendChild(videoCard);
-            });
-        }
-
-        function openVideo(videoId) {
-            window.location.href = `player.html?id=${videoId}`;
-        }
-
-        function deleteFromWatchHistory(index) {
-            let watchedVideos = getWatchHistory();
-            watchedVideos.splice(index, 1);
-            localStorage.setItem('watchHistory', JSON.stringify(watchedVideos));
-            displayWatchHistory();
+                </div>
+            `).join('');
         }
 
         // Clear watch history
-        document.getElementById('clearHistoryBtn').addEventListener('click', () => {
+        document.getElementById('clearHistoryBtn').addEventListener('click', async () => {
             if (confirm('Are you sure you want to clear your watch history?')) {
-                localStorage.removeItem('watchHistory');
-                displayWatchHistory();
+                await clearWatchHistory(currentUser.uid);
+                await displayWatchHistory();
             }
         });
-
-        // Display watch history when page loads
-        displayWatchHistory();
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

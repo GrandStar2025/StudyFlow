@@ -42,18 +42,18 @@
                     </div>
                     <i class="bi bi-moon-fill theme-icon dark-icon"></i>
                 </div>
-                <!-- Add Sign In Button -->
-                <a href="signin.html" id="signInButton" class="btn btn-primary" style="text-decoration: none;">
-                    <i class="bi bi-google me-2"></i>Sign in with Google
-                </a>
-                <!-- Add User Profile Button (initially hidden) -->
-                <div id="userProfileButton" class="user-profile" style="display: none;">
-                    <img src="" alt="Profile" class="profile-pic rounded-circle me-2" width="32" height="32">
-                    <span class="profile-name"></span>
-                    <div class="dropdown-menu">
-                        <button class="dropdown-item" id="signOutButton">
-                            <i class="bi bi-box-arrow-right me-2"></i>Sign Out
-                        </button>
+                <div class="navbar-nav ms-auto">
+                    <div class="nav-item dropdown" id="profileDropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="background: rgba(255, 255, 255, 0.1); padding: 8px 16px; border-radius: 50px;">
+                            <img id="userProfilePic" src="https://via.placeholder.com/32" alt="Profile" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover; border: 2px solid var(--primary-color);">
+                            <span id="userName" class="d-none d-md-inline" style="color: var(--text-color); font-weight: 500;">Sign In</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" style="margin-top: 10px; border-radius: 12px; border: 1px solid rgba(var(--primary-rgb), 0.1); box-shadow: 0 4px 16px rgba(0,0,0,0.1);">
+                            <li><a class="dropdown-item py-2" href="profile.html"><i class="bi bi-person me-2"></i>My Profile</a></li>
+                            <li><a class="dropdown-item py-2" href="settings.html"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item py-2 text-danger" href="#" id="signOutButton"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -115,27 +115,30 @@
     <script type="module">
         // Import Firebase modules
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js';
         import { 
             getAuth, 
-            GoogleAuthProvider, 
+            GoogleAuthProvider,
             signInWithPopup,
-            signOut, 
+            signOut,
             onAuthStateChanged 
         } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 
         // Your web app's Firebase configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyD93YiLLyTx1IycnHcArDKbgxvK_se27eA",
+            apiKey: "AIzaSyD33YiLLyTxlIycnHcArDKbgxvK_se27eA",
             authDomain: "studyflow-6ed25.firebaseapp.com",
+            databaseURL: "https://studyflow-6ed25-default-rtdb.firebaseio.com",
             projectId: "studyflow-6ed25",
             storageBucket: "studyflow-6ed25.firebasestorage.app",
             messagingSenderId: "562903369542",
-            appId: "1:562903369542:web:3f8bceb14d749870fc0747",
-            measurementId: "G-TD7DS8YKS8"
+            appId: "1:562903369542:web:3f80ceb14d749870fc0747",
+            measurementId: "G-TD7DS8YKSB"
         };
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
         
@@ -146,83 +149,44 @@
             prompt: 'select_account'
         });
 
-        // Sign In Function
-        async function signInWithGoogle() {
-            const signInButton = document.getElementById('signInButton');
-            signInButton.disabled = true;
-            signInButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Signing in...';
-
-            try {
-                const result = await signInWithPopup(auth, provider);
-                const user = result.user;
-                console.log('Successfully signed in:', user);
-                updateUIForUser(user);
-                showNotification('Successfully signed in!', 'success');
-            } catch (error) {
-                console.error('Error signing in:', error);
-                showNotification('Error signing in. Please try again.', 'error');
-            } finally {
-                signInButton.disabled = false;
-                signInButton.innerHTML = '<i class="bi bi-google me-2"></i>Sign in with Google';
-            }
-        }
-
-        // Sign Out Function
-        async function handleSignOut() {
-            try {
-                const signOutButton = document.getElementById('signOutButton');
-                signOutButton.disabled = true;
-
-                await signOut(auth);
-                showNotification('Successfully signed out!', 'success');
-            } catch (error) {
-                console.error('Error signing out:', error);
-                showNotification('Error signing out. Please try again.', 'error');
-            } finally {
-                const signOutButton = document.getElementById('signOutButton');
-                signOutButton.disabled = false;
-            }
-        }
-
         // Update UI based on auth state
-        function updateUIForUser(user) {
-            const userProfileButton = document.getElementById('userProfileButton');
-            const signInButton = document.getElementById('signInButton');
+        onAuthStateChanged(auth, (user) => {
+            const profilePic = document.getElementById('userProfilePic');
+            const userName = document.getElementById('userName');
+            const profileDropdown = document.getElementById('profileDropdown');
             
-            if (userProfileButton && signInButton) {
-                userProfileButton.style.display = 'flex';
-                signInButton.style.display = 'none';
+            if (user) {
+                // User is signed in
+                profilePic.src = user.photoURL || 'https://via.placeholder.com/32';
+                userName.textContent = user.displayName || 'User';
+                profileDropdown.classList.remove('d-none');
                 
-                const profilePic = userProfileButton.querySelector('.profile-pic');
-                const profileName = userProfileButton.querySelector('.profile-name');
-                
-                if (profilePic) {
-                    profilePic.src = user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.displayName || 'User');
-                }
-                if (profileName) {
-                    profileName.textContent = user.displayName || 'User';
-                }
-
-                // Store user info
+                // Store user info in localStorage
                 localStorage.setItem('user', JSON.stringify({
                     displayName: user.displayName,
                     email: user.email,
                     photoURL: user.photoURL
                 }));
+            } else {
+                // User is signed out
+                profilePic.src = 'https://via.placeholder.com/32';
+                userName.textContent = 'Sign In';
+                profileDropdown.classList.add('d-none');
+                localStorage.removeItem('user');
             }
-        }
+        });
 
-        function updateUIForSignOut() {
-            const userProfileButton = document.getElementById('userProfileButton');
-            const signInButton = document.getElementById('signInButton');
-            
-            if (userProfileButton && signInButton) {
-                userProfileButton.style.display = 'none';
-                signInButton.style.display = 'flex';
+        // Sign out functionality
+        document.getElementById('signOutButton').addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                showNotification('Successfully signed out!', 'success');
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Error signing out:', error);
+                showNotification('Error signing out. Please try again.', 'error');
             }
-            // Clear stored user info
-            localStorage.removeItem('user');
-        }
+        });
 
         // Show notification function
         function showNotification(message, type = 'info') {
@@ -235,19 +199,6 @@
                 notification.remove();
             }, 3000);
         }
-
-        // Add event listeners
-        document.getElementById('signInButton').addEventListener('click', signInWithGoogle);
-        document.getElementById('signOutButton').addEventListener('click', handleSignOut);
-
-        // Listen for auth state changes
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                updateUIForUser(user);
-            } else {
-                updateUIForSignOut();
-            }
-        });
     </script>
     <script src="script.js"></script>
     <script src="motivational-slideshow.js"></script>
