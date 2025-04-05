@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - Study Flow</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.1), rgba(var(--secondary-rgb), 0.1));
+        }
+        
+        .auth-card {
+            width: 100%;
+            max-width: 450px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(var(--primary-rgb), 0.1);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .auth-logo {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .auth-title {
+            font-size: 1.75rem;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .auth-form {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-floating {
+            margin-bottom: 1rem;
+        }
+
+        .auth-divider {
+            text-align: center;
+            position: relative;
+            margin: 1.5rem 0;
+        }
+
+        .auth-divider::before,
+        .auth-divider::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            width: 45%;
+            height: 1px;
+            background: rgba(var(--primary-rgb), 0.1);
+        }
+
+        .auth-divider::before {
+            left: 0;
+        }
+
+        .auth-divider::after {
+            right: 0;
+        }
+
+        .auth-divider span {
+            background: var(--card-bg);
+            padding: 0 1rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .google-btn {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1.1rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+            background: white;
+            color: #444;
+            border: 1px solid #ddd;
+        }
+
+        .google-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .google-btn img {
+            width: 24px;
+            height: 24px;
+            margin-right: 8px;
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: var(--text-muted);
+        }
+
+        .auth-footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(var(--primary-rgb), 0.1);
+        }
+
+        .auth-tab {
+            flex: 1;
+            text-align: center;
+            padding: 1rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .auth-tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .forgot-password {
+            text-align: right;
+            margin-bottom: 1rem;
+        }
+
+        .forgot-password a {
+            font-size: 0.9rem;
+        }
+
+        #signupForm {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <i class="bi bi-book-half"></i>
+                </div>
+                <h1 class="auth-title">Welcome to Study Flow</h1>
+                <p class="auth-subtitle">Sign in to continue to your learning journey</p>
+            </div>
+
+            <div class="auth-tabs">
+                <div class="auth-tab active" data-form="signin">Sign In</div>
+                <div class="auth-tab" data-form="signup">Sign Up</div>
+            </div>
+
+            <!-- Sign In Form -->
+            <form id="signinForm" class="auth-form">
+                <div class="form-floating">
+                    <input type="email" class="form-control" id="signinEmail" placeholder="name@example.com" required>
+                    <label for="signinEmail">Email address</label>
+                </div>
+                <div class="form-floating">
+                    <input type="password" class="form-control" id="signinPassword" placeholder="Password" required>
+                    <label for="signinPassword">Password</label>
+                </div>
+                <div class="forgot-password">
+                    <a href="#" id="forgotPasswordLink">Forgot password?</a>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 mb-3">Sign In</button>
+            </form>
+
+            <!-- Sign Up Form -->
+            <form id="signupForm" class="auth-form">
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="signupName" placeholder="Full Name" required>
+                    <label for="signupName">Full Name</label>
+                </div>
+                <div class="form-floating">
+                    <input type="email" class="form-control" id="signupEmail" placeholder="name@example.com" required>
+                    <label for="signupEmail">Email address</label>
+                </div>
+                <div class="form-floating">
+                    <input type="password" class="form-control" id="signupPassword" placeholder="Password" required>
+                    <label for="signupPassword">Password</label>
+                </div>
+                <div class="form-floating">
+                    <input type="password" class="form-control" id="signupConfirmPassword" placeholder="Confirm Password" required>
+                    <label for="signupConfirmPassword">Confirm Password</label>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 mb-3">Sign Up</button>
+            </form>
+
+            <div class="auth-divider">
+                <span>Or continue with</span>
+            </div>
+
+            <button id="googleSignInButton" class="btn google-btn">
+                <img src="https://www.google.com/favicon.ico" alt="Google" class="me-2">
+                Continue with Google
+            </button>
+
+            <div class="auth-footer">
+                <p><a href="index.html">Back to home</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+        import { 
+            getAuth, 
+            GoogleAuthProvider,
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword, 
+            signInWithPopup,
+            sendPasswordResetEmail,
+            onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD33YiLLyTxlIycnHcArDKbgxvK_se27eA",
+            authDomain: "studyflow-6ed25.firebaseapp.com",
+            databaseURL: "https://studyflow-6ed25-default-rtdb.firebaseio.com",
+            projectId: "studyflow-6ed25",
+            storageBucket: "studyflow-6ed25.firebasestorage.app",
+            messagingSenderId: "562903369542",
+            appId: "1:562903369542:web:3f80ceb14d749870fc0747",
+            measurementId: "G-TD7DS8YKSB"
+        };
+
+        // Initialize Firebase
+        let app;
+        let auth;
+        let provider;
+        let analytics;
+
+        try {
+            // Initialize Firebase app
+            app = initializeApp(firebaseConfig);
+            console.log('Firebase app initialized');
+
+            // Initialize Analytics
+            analytics = getAnalytics(app);
+            console.log('Analytics initialized');
+
+            // Initialize Auth
+            auth = getAuth(app);
+            console.log('Auth initialized');
+
+            // Initialize Google Provider
+            provider = new GoogleAuthProvider();
+            provider.addScope('profile');
+            provider.addScope('email');
+            provider.setCustomParameters({
+                prompt: 'select_account'
+            });
+            console.log('Google provider initialized');
+
+        } catch (error) {
+            console.error('Firebase initialization error:', error);
+            showNotification('Error initializing Firebase. Please check console for details.', 'error');
+        }
+
+        // Tab switching functionality
+        const tabs = document.querySelectorAll('.auth-tab');
+        const forms = {
+            signin: document.getElementById('signinForm'),
+            signup: document.getElementById('signupForm')
+        };
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const formToShow = tab.dataset.form;
+                
+                // Update tabs
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Update forms
+                Object.values(forms).forEach(form => form.style.display = 'none');
+                forms[formToShow].style.display = 'block';
+            });
+        });
+
+        // Email/Password Sign In
+        document.getElementById('signinForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('signinEmail').value;
+            const password = document.getElementById('signinPassword').value;
+            
+            try {
+                console.log('Attempting to sign in with email:', email);
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                console.log('User signed in successfully:', user);
+                showNotification('Successfully signed in!', 'success');
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Sign in error:', error);
+                let errorMessage = 'Error signing in. ';
+                
+                // More specific error messages
+                if (error.code === 'auth/invalid-credential') {
+                    errorMessage += 'Invalid email or password.';
+                } else if (error.code === 'auth/user-not-found') {
+                    errorMessage += 'No account found with this email.';
+                } else if (error.code === 'auth/wrong-password') {
+                    errorMessage += 'Incorrect password.';
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                showNotification(errorMessage, 'error');
+            }
+        });
+
+        // Email/Password Sign Up
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupConfirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                showNotification('Passwords do not match!', 'error');
+                return;
+            }
+            
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                showNotification('Account created successfully!', 'success');
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Error signing up:', error);
+                showNotification(error.message, 'error');
+            }
+        });
+
+        // Google Sign In
+        document.getElementById('googleSignInButton').addEventListener('click', async () => {
+            const button = document.getElementById('googleSignInButton');
+            const originalContent = button.innerHTML;
+            
+            try {
+                button.disabled = true;
+                button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Signing in...';
+                
+                console.log('Attempting Google sign in');
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                console.log('Google sign in successful:', user);
+                
+                localStorage.setItem('user', JSON.stringify({
+                    displayName: user.displayName,
+                    email: user.email,
+                    photoURL: user.photoURL
+                }));
+
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Google sign in error:', error);
+                let errorMessage = 'Error signing in with Google. ';
+                
+                if (error.code === 'auth/popup-closed-by-user') {
+                    errorMessage += 'Sign in popup was closed.';
+                } else if (error.code === 'auth/cancelled-popup-request') {
+                    errorMessage += 'Sign in was cancelled.';
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                showNotification(errorMessage, 'error');
+                button.disabled = false;
+                button.innerHTML = originalContent;
+            }
+        });
+
+        // Forgot Password
+        document.getElementById('forgotPasswordLink').addEventListener('click', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('signinEmail').value;
+            
+            if (!email) {
+                showNotification('Please enter your email address.', 'error');
+                return;
+            }
+            
+            try {
+                await sendPasswordResetEmail(auth, email);
+                showNotification('Password reset email sent!', 'success');
+            } catch (error) {
+                console.error('Error sending reset email:', error);
+                showNotification(error.message, 'error');
+            }
+        });
+
+        // Show notification function
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Check if user is already signed in
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                window.location.href = 'index.html';
+            }
+        });
+    </script>
+</body>
+</html> 

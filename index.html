@@ -35,12 +35,26 @@
                         </a>
                     </li>
                 </ul>
-                <div class="theme-switch-wrapper">
+                <div class="theme-switch-wrapper me-3">
                     <i class="bi bi-sun-fill theme-icon light-icon"></i>
                     <div class="form-check form-switch ms-2 me-2">
                         <input class="form-check-input" type="checkbox" id="themeSwitch">
                     </div>
                     <i class="bi bi-moon-fill theme-icon dark-icon"></i>
+                </div>
+                <!-- Add Sign In Button -->
+                <a href="signin.html" id="signInButton" class="btn btn-primary" style="text-decoration: none;">
+                    <i class="bi bi-google me-2"></i>Sign in with Google
+                </a>
+                <!-- Add User Profile Button (initially hidden) -->
+                <div id="userProfileButton" class="user-profile" style="display: none;">
+                    <img src="" alt="Profile" class="profile-pic rounded-circle me-2" width="32" height="32">
+                    <span class="profile-name"></span>
+                    <div class="dropdown-menu">
+                        <button class="dropdown-item" id="signOutButton">
+                            <i class="bi bi-box-arrow-right me-2"></i>Sign Out
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -97,6 +111,144 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { 
+            getAuth, 
+            GoogleAuthProvider, 
+            signInWithPopup,
+            signOut, 
+            onAuthStateChanged 
+        } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD93YiLLyTx1IycnHcArDKbgxvK_se27eA",
+            authDomain: "studyflow-6ed25.firebaseapp.com",
+            projectId: "studyflow-6ed25",
+            storageBucket: "studyflow-6ed25.firebasestorage.app",
+            messagingSenderId: "562903369542",
+            appId: "1:562903369542:web:3f8bceb14d749870fc0747",
+            measurementId: "G-TD7DS8YKS8"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+        
+        // Configure Google Sign-in provider
+        provider.addScope('profile');
+        provider.addScope('email');
+        provider.setCustomParameters({
+            prompt: 'select_account'
+        });
+
+        // Sign In Function
+        async function signInWithGoogle() {
+            const signInButton = document.getElementById('signInButton');
+            signInButton.disabled = true;
+            signInButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Signing in...';
+
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                console.log('Successfully signed in:', user);
+                updateUIForUser(user);
+                showNotification('Successfully signed in!', 'success');
+            } catch (error) {
+                console.error('Error signing in:', error);
+                showNotification('Error signing in. Please try again.', 'error');
+            } finally {
+                signInButton.disabled = false;
+                signInButton.innerHTML = '<i class="bi bi-google me-2"></i>Sign in with Google';
+            }
+        }
+
+        // Sign Out Function
+        async function handleSignOut() {
+            try {
+                const signOutButton = document.getElementById('signOutButton');
+                signOutButton.disabled = true;
+
+                await signOut(auth);
+                showNotification('Successfully signed out!', 'success');
+            } catch (error) {
+                console.error('Error signing out:', error);
+                showNotification('Error signing out. Please try again.', 'error');
+            } finally {
+                const signOutButton = document.getElementById('signOutButton');
+                signOutButton.disabled = false;
+            }
+        }
+
+        // Update UI based on auth state
+        function updateUIForUser(user) {
+            const userProfileButton = document.getElementById('userProfileButton');
+            const signInButton = document.getElementById('signInButton');
+            
+            if (userProfileButton && signInButton) {
+                userProfileButton.style.display = 'flex';
+                signInButton.style.display = 'none';
+                
+                const profilePic = userProfileButton.querySelector('.profile-pic');
+                const profileName = userProfileButton.querySelector('.profile-name');
+                
+                if (profilePic) {
+                    profilePic.src = user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.displayName || 'User');
+                }
+                if (profileName) {
+                    profileName.textContent = user.displayName || 'User';
+                }
+
+                // Store user info
+                localStorage.setItem('user', JSON.stringify({
+                    displayName: user.displayName,
+                    email: user.email,
+                    photoURL: user.photoURL
+                }));
+            }
+        }
+
+        function updateUIForSignOut() {
+            const userProfileButton = document.getElementById('userProfileButton');
+            const signInButton = document.getElementById('signInButton');
+            
+            if (userProfileButton && signInButton) {
+                userProfileButton.style.display = 'none';
+                signInButton.style.display = 'flex';
+            }
+            // Clear stored user info
+            localStorage.removeItem('user');
+        }
+
+        // Show notification function
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Add event listeners
+        document.getElementById('signInButton').addEventListener('click', signInWithGoogle);
+        document.getElementById('signOutButton').addEventListener('click', handleSignOut);
+
+        // Listen for auth state changes
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                updateUIForUser(user);
+            } else {
+                updateUIForSignOut();
+            }
+        });
+    </script>
     <script src="script.js"></script>
     <script src="motivational-slideshow.js"></script>
 </body>
