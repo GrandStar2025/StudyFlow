@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Flow - Playlists</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="bi bi-book-half me-2"></i>Study Flow
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i class="bi bi-house-door"></i>
+                    Home
+                </a>
+                <a href="history.html" class="nav-link">
+                    <i class="bi bi-clock-history"></i>
+                    Watch History
+                </a>
+                <a href="playlists.html" class="nav-link active">
+                    <i class="bi bi-collection-play"></i>
+                    Playlists
+                </a>
+            </div>
+            <div class="theme-switch-wrapper ms-auto">
+                <i class="bi bi-sun-fill theme-icon light-icon"></i>
+                <div class="form-check form-switch ms-2 me-2">
+                    <input class="form-check-input" type="checkbox" id="themeSwitch">
+                </div>
+                <i class="bi bi-moon-fill theme-icon dark-icon"></i>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="playlists-header mb-4">
+                    <h2><i class="bi bi-collection-play me-2"></i>My Playlists</h2>
+                    <button class="btn btn-primary" id="createPlaylistBtn">
+                        <i class="bi bi-plus-circle me-2"></i>Create New Playlist
+                    </button>
+                </div>
+                <div id="playlistsContainer">
+                    <!-- Playlists will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme switching functionality
+        const themeSwitch = document.getElementById('themeSwitch');
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-bs-theme', savedTheme);
+            themeSwitch.checked = savedTheme === 'dark';
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            document.documentElement.setAttribute('data-bs-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        themeSwitch.addEventListener('change', toggleTheme);
+        initTheme();
+
+        // Playlist functionality
+        let playlists = JSON.parse(localStorage.getItem('playlists') || '[]');
+        const playlistsContainer = document.getElementById('playlistsContainer');
+        const createPlaylistBtn = document.getElementById('createPlaylistBtn');
+
+        function createPlaylist(name) {
+            const playlist = {
+                id: Date.now(),
+                name: name,
+                videos: [],
+                createdAt: new Date().toISOString()
+            };
+            playlists.push(playlist);
+            savePlaylists();
+            displayPlaylists();
+        }
+
+        function deletePlaylist(playlistId) {
+            if (confirm('Are you sure you want to delete this playlist?')) {
+                playlists = playlists.filter(p => p.id !== playlistId);
+                savePlaylists();
+                displayPlaylists();
+            }
+        }
+
+        function removeVideoFromPlaylist(playlistId, videoId) {
+            const playlist = playlists.find(p => p.id === playlistId);
+            if (playlist) {
+                playlist.videos = playlist.videos.filter(v => v.id !== videoId);
+                savePlaylists();
+                displayPlaylists();
+            }
+        }
+
+        function savePlaylists() {
+            localStorage.setItem('playlists', JSON.stringify(playlists));
+        }
+
+        function displayPlaylists() {
+            playlistsContainer.innerHTML = '';
+            
+            if (playlists.length === 0) {
+                playlistsContainer.innerHTML = `
+                    <div class="no-playlists-message">
+                        <i class="bi bi-collection-play"></i>
+                        <h3>No Playlists Yet</h3>
+                        <p>Create your first playlist to start organizing your videos!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            playlists.forEach(playlist => {
+                const playlistElement = document.createElement('div');
+                playlistElement.className = 'playlist-card';
+                playlistElement.innerHTML = `
+                    <div class="playlist-card-header">
+                        <h3 class="playlist-title">
+                            <i class="bi bi-collection-play"></i>
+                            ${playlist.name}
+                        </h3>
+                        <div class="playlist-actions">
+                            <button class="btn btn-outline-danger" onclick="deletePlaylist(${playlist.id})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="playlist-add-video">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Enter video ID..." id="videoInput-${playlist.id}">
+                            <select class="form-select" style="max-width: 120px;" id="videoType-${playlist.id}">
+                                <option value="youtube">YouTube</option>
+                                <option value="local">Local</option>
+                            </select>
+                            <button class="btn btn-primary" onclick="addVideoToPlaylist(${playlist.id})">
+                                <i class="bi bi-plus-circle"></i> Add Video
+                            </button>
+                        </div>
+                    </div>
+                    <div class="playlist-videos">
+                        ${playlist.videos.length === 0 ? `
+                            <div class="no-videos-message">
+                                <p>No videos in this playlist yet</p>
+                            </div>
+                        ` : playlist.videos.map(video => `
+                            <div class="playlist-video-item">
+                                <div class="video-info">
+                                    ${video.type === 'youtube' ? 
+                                        `<img src="https://img.youtube.com/vi/${video.id}/mqdefault.jpg" class="video-thumbnail" alt="Video thumbnail">` :
+                                        `<div class="local-video-thumbnail" data-video="${video.id}">
+                                            <video src="videos/${video.id}.mp4" style="display: none;"></video>
+                                            <canvas width="320" height="180"></canvas>
+                                            <div class="thumbnail-overlay">
+                                                <i class="bi bi-file-play"></i>
+                                            </div>
+                                        </div>`
+                                    }
+                                    <div class="video-details">
+                                        <span class="video-title">${video.type === 'youtube' ? 'YouTube Video' : 'Local Video'}</span>
+                                        <span class="video-id">${video.id}</span>
+                                    </div>
+                                </div>
+                                <div class="video-actions">
+                                    <a href="player.html?id=${video.id}&type=${video.type}" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-play-fill"></i>
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="removeVideoFromPlaylist(${playlist.id}, '${video.id}')">
+                                        <i class="bi bi-x"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                playlistsContainer.appendChild(playlistElement);
+            });
+
+            generateLocalVideoThumbnails();
+        }
+
+        function generateLocalVideoThumbnails() {
+            const thumbnailContainers = document.querySelectorAll('.local-video-thumbnail');
+            thumbnailContainers.forEach(container => {
+                const video = container.querySelector('video');
+                const canvas = container.querySelector('canvas');
+                const ctx = canvas.getContext('2d');
+
+                // When video metadata is loaded, capture the thumbnail
+                video.addEventListener('loadedmetadata', () => {
+                    // Seek to 1 second to avoid black frame
+                    video.currentTime = 1;
+                });
+
+                video.addEventListener('seeked', () => {
+                    // Draw the current frame to canvas
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    // Clean up
+                    video.remove();
+                });
+
+                // Handle errors
+                video.addEventListener('error', () => {
+                    // Show placeholder for failed thumbnails
+                    container.innerHTML = `
+                        <div class="thumbnail-placeholder">
+                            <i class="bi bi-file-play"></i>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        function addVideoToPlaylist(playlistId) {
+            const videoInput = document.getElementById(`videoInput-${playlistId}`);
+            const videoType = document.getElementById(`videoType-${playlistId}`);
+            const videoId = videoInput.value.trim();
+            
+            if (!videoId) {
+                alert('Please enter a video ID');
+                return;
+            }
+
+            const playlist = playlists.find(p => p.id === playlistId);
+            if (playlist) {
+                // Check if video already exists in playlist
+                if (playlist.videos.some(v => v.id === videoId)) {
+                    alert('This video is already in the playlist!');
+                    return;
+                }
+
+                // Add new video
+                const video = {
+                    id: videoId,
+                    type: videoType.value,
+                    addedAt: new Date().toISOString()
+                };
+
+                playlist.videos.push(video);
+                savePlaylists();
+                displayPlaylists();
+
+                // Clear input
+                videoInput.value = '';
+            }
+        }
+
+        createPlaylistBtn.addEventListener('click', () => {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Create New Playlist</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="text" class="form-control" id="newPlaylistName" placeholder="Enter playlist name...">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" id="confirmCreatePlaylist">Create</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            const modalInstance = new bootstrap.Modal(modal);
+            modalInstance.show();
+
+            document.getElementById('confirmCreatePlaylist').addEventListener('click', () => {
+                const name = document.getElementById('newPlaylistName').value.trim();
+                if (name) {
+                    createPlaylist(name);
+                    modalInstance.hide();
+                    modal.remove();
+                }
+            });
+
+            modal.addEventListener('hidden.bs.modal', () => {
+                modal.remove();
+            });
+        });
+
+        // Initialize playlists on page load
+        displayPlaylists();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

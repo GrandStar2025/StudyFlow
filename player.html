@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Flow - Video Player</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="bi bi-book-half me-2"></i>Study Flow
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i class="bi bi-house-door"></i>
+                    Home
+                </a>
+                <a href="history.html" class="nav-link">
+                    <i class="bi bi-clock-history"></i>
+                    Watch History
+                </a>
+                <a href="playlists.html" class="nav-link">
+                    <i class="bi bi-collection-play"></i>
+                    Playlists
+                </a>
+            </div>
+            <div class="theme-switch-wrapper ms-auto">
+                <i class="bi bi-sun-fill theme-icon light-icon"></i>
+                <div class="form-check form-switch ms-2 me-2">
+                    <input class="form-check-input" type="checkbox" id="themeSwitch">
+                </div>
+                <i class="bi bi-moon-fill theme-icon dark-icon"></i>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="video-selector mb-3">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="videoIdInput" placeholder="Enter YouTube video ID or local video name...">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" id="loadVideoBtn">
+                                <i class="bi bi-play-fill me-2"></i>Load Video
+                            </button>
+                            <button class="btn btn-outline-primary" id="playlistDropdownBtn">
+                                <i class="bi bi-plus-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="playlist-dropdown" id="playlistDropdown">
+                        <div class="playlist-dropdown-header">
+                            <h6>Add to Playlist</h6>
+                            <button class="btn btn-sm btn-primary" id="createNewPlaylistBtn">
+                                <i class="bi bi-plus-circle me-1"></i>New Playlist
+                            </button>
+                        </div>
+                        <div class="playlist-dropdown-list" id="playlistDropdownList">
+                            <!-- Playlists will be listed here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="player-selector mb-3">
+                    <div class="btn-group w-100" role="group" aria-label="Player selector">
+                        <button type="button" class="btn btn-outline-primary active" id="youtubePlayerBtn">
+                            <i class="bi bi-youtube"></i> YouTube Player
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" id="customPlayerBtn">
+                            <i class="bi bi-play-circle"></i> Study Flow Player
+                        </button>
+                    </div>
+                </div>
+                <div class="video-container">
+                    <div id="youtube-player" class="player-option active"></div>
+                    <div id="custom-player" class="player-option">
+                        <div class="video-wrapper">
+                            <video id="video">
+                                Your browser does not support the video tag.
+                            </video>
+                            <div class="custom-controls">
+                                <div class="progress-container">
+                                    <div class="progress-bar">
+                                        <div class="progress-filled"></div>
+                                    </div>
+                                    <div class="progress-hover-time">0:00</div>
+                                </div>
+                                <div class="controls-main">
+                                    <div class="controls-left">
+                                        <button class="control-btn" id="playPauseBtn">
+                                            <i class="bi bi-play-fill"></i>
+                                        </button>
+                                        <div class="volume-control">
+                                            <button class="control-btn" id="muteBtn">
+                                                <i class="bi bi-volume-up-fill"></i>
+                                            </button>
+                                            <div class="volume-slider-container">
+                                                <input type="range" id="volumeSlider" min="0" max="100" value="100">
+                                                <div class="volume-progress"></div>
+                                            </div>
+                                        </div>
+                                        <div class="time-display">
+                                            <span id="currentTime">0:00</span>
+                                            <span class="time-separator">/</span>
+                                            <span id="duration">0:00</span>
+                                        </div>
+                                    </div>
+                                    <div class="controls-right">
+                                        <div class="playback-control">
+                                            <button class="control-btn" id="playbackBtn">
+                                                <i class="bi bi-speedometer2"></i>
+                                                <span id="playbackDisplay">1x</span>
+                                            </button>
+                                            <div class="playback-options">
+                                                <button data-speed="0.5">0.5x</button>
+                                                <button data-speed="0.75">0.75x</button>
+                                                <button data-speed="1" class="active">1x</button>
+                                                <button data-speed="1.25">1.25x</button>
+                                                <button data-speed="1.5">1.5x</button>
+                                                <button data-speed="2">2x</button>
+                                            </div>
+                                        </div>
+                                        <button class="control-btn" id="fullscreenBtn">
+                                            <i class="bi bi-fullscreen"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <!-- Performance Section -->
+                <div class="performance-section mb-4">
+                    <h4><i class="bi bi-graph-up"></i> Your Progress</h4>
+                    <div class="progress-stats">
+                        <div class="stat-card">
+                            <div class="stat-label">Video Progress</div>
+                            <div class="progress">
+                                <div class="progress-bar" id="videoProgress" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <div class="stat-value" id="videoProgressText">0%</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Study Time Today</div>
+                            <div class="stat-value" id="studyTimeToday">0 min</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Notes Created</div>
+                            <div class="stat-value" id="notesCount">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Today's Tasks Section -->
+                <div class="tasks-section mb-4">
+                    <h4><i class="bi bi-check2-square"></i> Today's Tasks</h4>
+                    <div class="task-input-group mb-3">
+                        <input type="text" class="form-control" id="taskInput" placeholder="Add a new task...">
+                        <button class="btn btn-primary mt-2 w-100" id="addTaskBtn">
+                            <i class="bi bi-plus-circle me-2"></i>Add Task
+                        </button>
+                    </div>
+                    <div id="tasksList">
+                        <!-- Tasks will be displayed here -->
+                    </div>
+                </div>
+
+                <!-- Notes Section -->
+                <div class="notes-section">
+                    <h4><i class="bi bi-journal-text"></i> Study Notes</h4>
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <textarea class="form-control" id="noteInput" rows="3" placeholder="Write your study notes here..."></textarea>
+                        </div>
+                        <button class="btn btn-primary mt-2 w-100" id="addNoteBtn">
+                            <i class="bi bi-plus-circle me-2"></i>Add Note
+                        </button>
+                    </div>
+                    <div class="recording-controls">
+                        <button class="btn btn-danger flex-grow-1" id="recordBtn">
+                            <i class="bi bi-mic-fill"></i> Start Recording
+                        </button>
+                        <button class="btn btn-secondary flex-grow-1" id="stopBtn" disabled>
+                            <i class="bi bi-stop-fill"></i> Stop
+                        </button>
+                    </div>
+                    <div id="notesList" class="mt-4">
+                        <!-- Notes will be displayed here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add this at the beginning of your script section
+        const youtubePlayerBtn = document.getElementById('youtubePlayerBtn');
+        const customPlayerBtn = document.getElementById('customPlayerBtn');
+        const youtubePlayerContainer = document.getElementById('youtube-player');
+        const customPlayerContainer = document.getElementById('custom-player');
+        let currentPlayer = 'youtube';
+
+        youtubePlayerBtn.addEventListener('click', () => {
+            if (currentPlayer !== 'youtube') {
+                // Stop Study Flow player
+                const video = document.getElementById('video');
+                video.pause();
+                video.removeAttribute('src');
+                video.load();
+                
+                // Switch to YouTube player
+                youtubePlayerBtn.classList.add('active');
+                customPlayerBtn.classList.remove('active');
+                youtubePlayerContainer.classList.add('active');
+                customPlayerContainer.classList.remove('active');
+                currentPlayer = 'youtube';
+                
+                // Initialize YouTube player
+                const currentTime = video.currentTime || 0;
+                initYouTubePlayer(currentTime);
+            }
+        });
+
+        customPlayerBtn.addEventListener('click', () => {
+            if (currentPlayer !== 'custom') {
+                // Get current time from YouTube player if available
+                const currentTime = player ? player.getCurrentTime() : 0;
+                
+                // Stop YouTube player
+                if (player) {
+                    player.pauseVideo();
+                }
+                
+                // Switch to Study Flow player
+                customPlayerBtn.classList.add('active');
+                youtubePlayerBtn.classList.remove('active');
+                customPlayerContainer.classList.add('active');
+                youtubePlayerContainer.classList.remove('active');
+                currentPlayer = 'custom';
+                
+                // Initialize Study Flow player
+                initCustomPlayer(currentTime);
+            }
+        });
+
+        // Initialize YouTube Player
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        var player;
+        let notes = [];
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+        let editingNoteId = null;
+
+        function onYouTubeIframeAPIReady() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const videoId = urlParams.get('id');
+            
+            if (!videoId) {
+                alert('No video ID provided!');
+                return;
+            }
+
+            player = new YT.Player('youtube-player', {
+                height: '100%',
+                width: '100%',
+                videoId: videoId,
+                playerVars: {
+                    'autoplay': 1,
+                    'modestbranding': 1,
+                    'rel': 0,
+                    'showinfo': 0,
+                    'controls': 1,
+                    'fs': 1,
+                    'playsinline': 1
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange,
+                    'onError': onPlayerError
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            // Start progress tracking
+            event.target.playVideo();
+            updateProgress();
+            loadSavedProgress();
+        }
+
+        function onPlayerStateChange(event) {
+            if (event.data === YT.PlayerState.ENDED) {
+                // Video ended
+                document.getElementById('videoProgress').style.width = '100%';
+                document.getElementById('videoProgressText').textContent = '100%';
+                
+                // Save completion in localStorage
+                const videoId = new URLSearchParams(window.location.search).get('id');
+                const completedVideos = JSON.parse(localStorage.getItem('completedVideos') || '[]');
+                if (!completedVideos.includes(videoId)) {
+                    completedVideos.push(videoId);
+                    localStorage.setItem('completedVideos', JSON.stringify(completedVideos));
+                }
+            } else if (event.data === YT.PlayerState.PLAYING) {
+                // Video is playing
+                startProgressTracking();
+            }
+        }
+
+        function onPlayerError(event) {
+            console.error('YouTube Player Error:', event.data);
+            alert('Error loading video. Please check if the video ID is correct and the video is available.');
+        }
+
+        // Update progress every second
+        let progressInterval;
+        function startProgressTracking() {
+            if (progressInterval) {
+                clearInterval(progressInterval);
+            }
+            progressInterval = setInterval(updateProgress, 1000);
+        }
+
+        function updateProgress() {
+            if (player && player.getCurrentTime && player.getDuration) {
+                const currentTime = player.getCurrentTime();
+                const duration = player.getDuration();
+                const progress = (currentTime / duration) * 100;
+                
+                document.getElementById('videoProgress').style.width = `${progress}%`;
+                document.getElementById('videoProgressText').textContent = `${Math.round(progress)}%`;
+
+                // Save progress in localStorage
+                const videoId = new URLSearchParams(window.location.search).get('id');
+                const videoProgress = {
+                    id: videoId,
+                    currentTime: currentTime,
+                    duration: duration,
+                    progress: progress,
+                    lastUpdated: new Date().toISOString()
+                };
+                localStorage.setItem(`videoProgress_${videoId}`, JSON.stringify(videoProgress));
+            }
+        }
+
+        // Load saved progress when video loads
+        function loadSavedProgress() {
+            const videoId = new URLSearchParams(window.location.search).get('id');
+            const savedProgress = localStorage.getItem(`videoProgress_${videoId}`);
+            if (savedProgress) {
+                const { currentTime, progress } = JSON.parse(savedProgress);
+                if (currentTime && !isNaN(currentTime)) {
+                    player.seekTo(currentTime, true);
+                }
+                document.getElementById('videoProgress').style.width = `${progress}%`;
+                document.getElementById('videoProgressText').textContent = `${Math.round(progress)}%`;
+            }
+        }
+
+        // Notes functionality
+        document.getElementById('addNoteBtn').addEventListener('click', () => {
+            const noteText = document.getElementById('noteInput').value.trim();
+            if (noteText) {
+                const currentTime = player.getCurrentTime();
+                addNote(noteText, currentTime);
+                document.getElementById('noteInput').value = '';
+            }
+        });
+
+        function addNote(text, time) {
+            const note = {
+                id: Date.now(),
+                text: text,
+                time: time,
+                timestamp: new Date().toISOString()
+            };
+            notes.push(note);
+            saveNotes();
+            displayNotes();
+        }
+
+        function displayNotes() {
+            const notesList = document.getElementById('notesList');
+            notesList.innerHTML = '';
+            
+            notes.sort((a, b) => a.time - b.time).forEach(note => {
+                const noteElement = document.createElement('div');
+                noteElement.className = 'note-item';
+                noteElement.innerHTML = `
+                    <div class="note-time">
+                        <i class="bi bi-clock"></i>
+                        ${formatTime(note.time)}
+                    </div>
+                    <div class="note-text" id="note-text-${note.id}">${note.text}</div>
+                    ${note.audioUrl ? `
+                        <audio class="audio-player" controls>
+                            <source src="${note.audioUrl}" type="audio/wav">
+                            Your browser does not support the audio element.
+                        </audio>
+                    ` : ''}
+                    <div class="note-actions">
+                        <button class="btn btn-sm btn-outline-primary" onclick="seekToTime(${note.time})">
+                            <i class="bi bi-play-circle me-1"></i>Jump to time
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="editNote(${note.id})">
+                            <i class="bi bi-pencil me-1"></i>Edit
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteNote(${note.id})">
+                            <i class="bi bi-trash me-1"></i>Delete
+                        </button>
+                    </div>
+                `;
+                notesList.appendChild(noteElement);
+            });
+        }
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.floor(seconds % 60);
+            return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        function seekToTime(time) {
+            player.seekTo(time);
+        }
+
+        function editNote(noteId) {
+            if (editingNoteId === noteId) {
+                // Save the edit
+                const noteTextElement = document.getElementById(`note-text-${noteId}`);
+                const newText = noteTextElement.value;
+                const noteIndex = notes.findIndex(note => note.id === noteId);
+                if (noteIndex !== -1) {
+                    notes[noteIndex].text = newText;
+                    saveNotes();
+                    displayNotes();
+                }
+                editingNoteId = null;
+            } else {
+                // Start editing
+                const noteTextElement = document.getElementById(`note-text-${noteId}`);
+                const currentText = noteTextElement.textContent;
+                noteTextElement.innerHTML = `<textarea class="form-control note-text editing">${currentText}</textarea>`;
+                editingNoteId = noteId;
+            }
+        }
+
+        function deleteNote(noteId) {
+            if (confirm('Are you sure you want to delete this note?')) {
+                notes = notes.filter(note => note.id !== noteId);
+                saveNotes();
+                displayNotes();
+            }
+        }
+
+        // Voice recording functionality
+        const recordBtn = document.getElementById('recordBtn');
+        const stopBtn = document.getElementById('stopBtn');
+
+        recordBtn.addEventListener('click', startRecording);
+        stopBtn.addEventListener('click', stopRecording);
+
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const currentTime = player.getCurrentTime();
+                    
+                    // Add audio note
+                    const note = {
+                        id: Date.now(),
+                        text: 'Voice Note',
+                        time: currentTime,
+                        timestamp: new Date().toISOString(),
+                        audioUrl: audioUrl
+                    };
+                    notes.push(note);
+                    saveNotes();
+                    displayNotes();
+                    
+                    audioChunks = [];
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                recordBtn.disabled = true;
+                stopBtn.disabled = false;
+            } catch (error) {
+                console.error('Error accessing microphone:', error);
+                alert('Error accessing microphone. Please ensure you have granted microphone permissions.');
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+                isRecording = false;
+                recordBtn.disabled = false;
+                stopBtn.disabled = true;
+            }
+        }
+
+        // Local storage functionality
+        function saveNotes() {
+            localStorage.setItem('studyNotes', JSON.stringify(notes));
+        }
+
+        function loadNotes() {
+            const savedNotes = localStorage.getItem('studyNotes');
+            if (savedNotes) {
+                notes = JSON.parse(savedNotes);
+                displayNotes();
+            }
+        }
+
+        // Load saved notes when page loads
+        loadNotes();
+
+        // Load notes on page load
+        loadNotes();
+        displayNotes();
+
+        // Theme switching functionality
+        const themeSwitch = document.getElementById('themeSwitch');
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-bs-theme', savedTheme);
+            themeSwitch.checked = savedTheme === 'dark';
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            document.documentElement.setAttribute('data-bs-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        themeSwitch.addEventListener('change', toggleTheme);
+        initTheme();
+
+        // Performance tracking
+        let startTime = Date.now();
+        let studyTimeToday = parseInt(localStorage.getItem('studyTimeToday') || '0');
+        let lastDate = localStorage.getItem('lastStudyDate');
+        
+        // Reset study time if it's a new day
+        const today = new Date().toDateString();
+        if (lastDate !== today) {
+            studyTimeToday = 0;
+            localStorage.setItem('lastStudyDate', today);
+        }
+
+        // Update performance metrics every minute
+        setInterval(() => {
+            // Update study time
+            const currentTime = Date.now();
+            const timeSpent = Math.floor((currentTime - startTime) / 60000); // Convert to minutes
+            studyTimeToday += 1;
+            localStorage.setItem('studyTimeToday', studyTimeToday.toString());
+            document.getElementById('studyTimeToday').textContent = `${studyTimeToday} min`;
+
+            // Update notes count
+            document.getElementById('notesCount').textContent = notes.length.toString();
+        }, 60000);
+
+        // Tasks functionality
+        let tasks = JSON.parse(localStorage.getItem('todayTasks') || '[]');
+        const taskInput = document.getElementById('taskInput');
+        const addTaskBtn = document.getElementById('addTaskBtn');
+        const tasksList = document.getElementById('tasksList');
+
+        function addTask(text) {
+            const task = {
+                id: Date.now(),
+                text: text,
+                completed: false,
+                date: new Date().toDateString()
+            };
+            tasks.push(task);
+            saveTasks();
+            displayTasks();
+            taskInput.value = '';
+        }
+
+        function toggleTask(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                task.completed = !task.completed;
+                saveTasks();
+                displayTasks();
+            }
+        }
+
+        function deleteTask(taskId) {
+            tasks = tasks.filter(t => t.id !== taskId);
+            saveTasks();
+            displayTasks();
+        }
+
+        function saveTasks() {
+            localStorage.setItem('todayTasks', JSON.stringify(tasks));
+        }
+
+        function displayTasks() {
+            // Filter tasks for today
+            const todayTasks = tasks.filter(task => task.date === new Date().toDateString());
+            
+            tasksList.innerHTML = '';
+            todayTasks.forEach(task => {
+                const taskElement = document.createElement('div');
+                taskElement.className = 'task-item';
+                taskElement.innerHTML = `
+                    <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask(${task.id})">
+                        ${task.completed ? '<i class="bi bi-check"></i>' : ''}
+                    </div>
+                    <div class="task-text ${task.completed ? 'completed' : ''}">${task.text}</div>
+                    <i class="bi bi-trash task-delete" onclick="deleteTask(${task.id})"></i>
+                `;
+                tasksList.appendChild(taskElement);
+            });
+        }
+
+        // Initialize tasks
+        displayTasks();
+
+        // Add task event listeners
+        addTaskBtn.addEventListener('click', () => {
+            const text = taskInput.value.trim();
+            if (text) {
+                addTask(text);
+            }
+        });
+
+        taskInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const text = taskInput.value.trim();
+                if (text) {
+                    addTask(text);
+                }
+            }
+        });
+
+        // Make functions available globally
+        window.toggleTask = toggleTask;
+        window.deleteTask = deleteTask;
+
+        // Custom Player Functions
+        function initCustomPlayer(startTime = 0) {
+            const video = document.getElementById('video');
+            const urlParams = new URLSearchParams(window.location.search);
+            const videoId = urlParams.get('id');
+            
+            if (!videoId) {
+                alert('Please provide a video ID in the URL (e.g., ?id=video1)');
+                return;
+            }
+
+            // Clear previous video source and error handlers
+            video.removeAttribute('src');
+            video.load();
+
+            // Set video source
+            const videoPath = `videos/${videoId}.mp4`;
+            
+            // Check if video file exists
+            fetch(videoPath, { method: 'HEAD' })
+                .then(response => {
+                    if (response.ok) {
+                        // Video exists, load it
+                        video.src = videoPath;
+                        
+                        // Initialize controls
+                        initCustomControls();
+                        
+                        // Set up event listeners
+                        video.addEventListener('loadedmetadata', () => {
+                            video.currentTime = startTime;
+                            updateDurationDisplay();
+                            video.play().catch(error => {
+                                console.error('Error playing video:', error);
+                            });
+                        });
+
+                        // Progress tracking
+                        video.addEventListener('timeupdate', () => {
+                            updateTimeDisplay();
+                            updateProgressBar();
+                            saveVideoProgress();
+                        });
+
+                        // Load saved progress
+                        loadSavedProgress();
+                    } else {
+                        alert(`Video file not found: ${videoId}.mp4\n\nPlease make sure to:\n1. Place your video in the 'videos' folder\n2. Name it as '${videoId}.mp4'\n3. Refresh the page`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking video:', error);
+                    alert('Error checking video file. Please make sure the video exists and try again.');
+                });
+        }
+
+        function initCustomControls() {
+            const video = document.getElementById('video');
+            const container = document.getElementById('custom-player');
+            const controls = container.querySelector('.custom-controls');
+            const playPauseBtn = document.getElementById('playPauseBtn');
+            const muteBtn = document.getElementById('muteBtn');
+            const volumeSlider = document.getElementById('volumeSlider');
+            const progressBar = container.querySelector('.progress-bar');
+            const progressFilled = container.querySelector('.progress-filled');
+            const progressHoverTime = container.querySelector('.progress-hover-time');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            const playbackBtn = document.getElementById('playbackBtn');
+            const playbackOptions = container.querySelector('.playback-options');
+            
+            // Play/Pause
+            playPauseBtn.addEventListener('click', togglePlay);
+            video.addEventListener('click', togglePlay);
+            
+            function togglePlay() {
+                if (video.paused) {
+                    video.play();
+                    playPauseBtn.innerHTML = '<i class="bi bi-pause-fill"></i>';
+                } else {
+                    video.pause();
+                    playPauseBtn.innerHTML = '<i class="bi bi-play-fill"></i>';
+                }
+            }
+
+            // Volume Control
+            volumeSlider.addEventListener('input', (e) => {
+                const value = e.target.value;
+                video.volume = value / 100;
+                updateVolumeDisplay(value);
+            });
+
+            muteBtn.addEventListener('click', () => {
+                video.muted = !video.muted;
+                updateVolumeDisplay(video.muted ? 0 : volumeSlider.value);
+            });
+
+            function updateVolumeDisplay(value) {
+                const volumeProgress = container.querySelector('.volume-progress');
+                volumeProgress.style.width = `${value}%`;
+                
+                const icon = muteBtn.querySelector('i');
+                if (value === 0 || video.muted) {
+                    icon.className = 'bi bi-volume-mute-fill';
+                } else if (value < 50) {
+                    icon.className = 'bi bi-volume-down-fill';
+                } else {
+                    icon.className = 'bi bi-volume-up-fill';
+                }
+            }
+
+            // Progress Bar
+            progressBar.addEventListener('mousedown', (e) => {
+                const pos = (e.pageX - progressBar.offsetLeft) / progressBar.offsetWidth;
+                video.currentTime = pos * video.duration;
+                
+                // Enable dragging
+                document.addEventListener('mousemove', dragProgress);
+                document.addEventListener('mouseup', stopDragProgress);
+            });
+
+            progressBar.addEventListener('mousemove', (e) => {
+                const pos = (e.pageX - progressBar.offsetLeft) / progressBar.offsetWidth;
+                const time = pos * video.duration;
+                progressHoverTime.textContent = formatTime(time);
+                progressHoverTime.style.left = `${e.pageX - progressBar.offsetLeft}px`;
+            });
+
+            function dragProgress(e) {
+                const pos = (e.pageX - progressBar.offsetLeft) / progressBar.offsetWidth;
+                video.currentTime = pos * video.duration;
+            }
+
+            function stopDragProgress() {
+                document.removeEventListener('mousemove', dragProgress);
+                document.removeEventListener('mouseup', stopDragProgress);
+            }
+
+            // Playback Speed
+            playbackBtn.addEventListener('click', () => {
+                playbackOptions.classList.toggle('show');
+            });
+
+            playbackOptions.querySelectorAll('button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const speed = parseFloat(button.dataset.speed);
+                    video.playbackRate = speed;
+                    document.getElementById('playbackDisplay').textContent = `${speed}x`;
+                    
+                    // Update active state
+                    playbackOptions.querySelectorAll('button').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    button.classList.add('active');
+                    
+                    playbackOptions.classList.remove('show');
+                });
+            });
+
+            // Fullscreen
+            fullscreenBtn.addEventListener('click', () => {
+                if (!document.fullscreenElement) {
+                    container.requestFullscreen();
+                    fullscreenBtn.innerHTML = '<i class="bi bi-fullscreen-exit"></i>';
+                } else {
+                    document.exitFullscreen();
+                    fullscreenBtn.innerHTML = '<i class="bi bi-fullscreen"></i>';
+                }
+            });
+
+            // Hide controls when mouse is inactive
+            let controlsTimeout;
+            container.addEventListener('mousemove', () => {
+                controls.style.opacity = '1';
+                clearTimeout(controlsTimeout);
+                controlsTimeout = setTimeout(() => {
+                    if (!video.paused) {
+                        controls.style.opacity = '0';
+                    }
+                }, 2000);
+            });
+
+            container.addEventListener('mouseleave', () => {
+                if (!video.paused) {
+                    controls.style.opacity = '0';
+                }
+            });
+        }
+
+        function updateTimeDisplay() {
+            const video = document.getElementById('video');
+            const currentTimeEl = document.getElementById('currentTime');
+            currentTimeEl.textContent = formatTime(video.currentTime);
+        }
+
+        function updateDurationDisplay() {
+            const video = document.getElementById('video');
+            const durationEl = document.getElementById('duration');
+            durationEl.textContent = formatTime(video.duration);
+        }
+
+        function updateProgressBar() {
+            const video = document.getElementById('video');
+            const progressFilled = document.querySelector('.progress-filled');
+            const progress = (video.currentTime / video.duration) * 100;
+            progressFilled.style.width = `${progress}%`;
+        }
+
+        function saveVideoProgress() {
+            const video = document.getElementById('video');
+            const videoId = new URLSearchParams(window.location.search).get('id');
+            const progress = (video.currentTime / video.duration) * 100;
+            
+            localStorage.setItem(`videoProgress_${videoId}`, JSON.stringify({
+                id: videoId,
+                currentTime: video.currentTime,
+                duration: video.duration,
+                progress: progress,
+                lastUpdated: new Date().toISOString()
+            }));
+
+            // Update progress bar in performance section
+            document.getElementById('videoProgress').style.width = `${progress}%`;
+            document.getElementById('videoProgressText').textContent = `${Math.round(progress)}%`;
+        }
+
+        function loadSavedProgress() {
+            const video = document.getElementById('video');
+            const videoId = new URLSearchParams(window.location.search).get('id');
+            const savedProgress = localStorage.getItem(`videoProgress_${videoId}`);
+            
+            if (savedProgress) {
+                const { currentTime } = JSON.parse(savedProgress);
+                if (currentTime && !isNaN(currentTime)) {
+                    video.currentTime = currentTime;
+                }
+            }
+        }
+
+        // Update YouTube player initialization
+        function initYouTubePlayer(startTime = 0) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const videoId = urlParams.get('id');
+            
+            if (!videoId) {
+                alert('No video ID provided!');
+                return;
+            }
+
+            if (player) {
+                player.loadVideoById({
+                    videoId: videoId,
+                    startSeconds: startTime
+                });
+            } else {
+                player = new YT.Player('youtube-player', {
+                    height: '100%',
+                    width: '100%',
+                    videoId: videoId,
+                    playerVars: {
+                        'autoplay': 1,
+                        'modestbranding': 1,
+                        'rel': 0,
+                        'showinfo': 0,
+                        'controls': 1,
+                        'fs': 1,
+                        'playsinline': 1,
+                        'start': Math.floor(startTime)
+                    },
+                    events: {
+                        'onReady': onPlayerReady,
+                        'onStateChange': onPlayerStateChange,
+                        'onError': onPlayerError
+                    }
+                });
+            }
+        }
+
+        // Add this helper function to check if a file exists
+        function checkFileExists(url) {
+            return new Promise((resolve) => {
+                fetch(url, { method: 'HEAD' })
+                    .then(response => resolve(response.ok))
+                    .catch(() => resolve(false));
+            });
+        }
+
+        // Add playlist functionality
+        let playlists = JSON.parse(localStorage.getItem('playlists') || '[]');
+
+        function addVideoToPlaylist(playlistId, videoId, videoType = 'youtube') {
+            const playlist = playlists.find(p => p.id === playlistId);
+            if (playlist) {
+                const video = {
+                    id: videoId,
+                    type: videoType,
+                    addedAt: new Date().toISOString()
+                };
+                if (!playlist.videos.some(v => v.id === videoId)) {
+                    playlist.videos.push(video);
+                    savePlaylists();
+                    updatePlaylistDropdown();
+                    playlistDropdown.classList.remove('show');
+                } else {
+                    alert('This video is already in the playlist!');
+                }
+            }
+        }
+
+        function savePlaylists() {
+            localStorage.setItem('playlists', JSON.stringify(playlists));
+        }
+
+        function playVideo(videoId, videoType) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('id', videoId);
+            url.searchParams.set('type', videoType);
+            window.history.pushState({}, '', url);
+            
+            if (videoType === 'youtube') {
+                initYouTubePlayer();
+            } else {
+                initCustomPlayer();
+            }
+        }
+
+        // Add playlist dropdown functionality
+        const playlistDropdownBtn = document.getElementById('playlistDropdownBtn');
+        const playlistDropdown = document.getElementById('playlistDropdown');
+        const createNewPlaylistBtn = document.getElementById('createNewPlaylistBtn');
+        const playlistDropdownList = document.getElementById('playlistDropdownList');
+
+        playlistDropdownBtn.addEventListener('click', () => {
+            playlistDropdown.classList.toggle('show');
+            updatePlaylistDropdown();
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!playlistDropdown.contains(e.target) && !playlistDropdownBtn.contains(e.target)) {
+                playlistDropdown.classList.remove('show');
+            }
+        });
+
+        function updatePlaylistDropdown() {
+            playlistDropdownList.innerHTML = '';
+            if (playlists.length === 0) {
+                playlistDropdownList.innerHTML = '<div class="no-playlists">No playlists yet</div>';
+                return;
+            }
+
+            playlists.forEach(playlist => {
+                const playlistItem = document.createElement('div');
+                playlistItem.className = 'playlist-dropdown-item';
+                playlistItem.innerHTML = `
+                    <div class="playlist-dropdown-info">
+                        <i class="bi bi-collection-play"></i>
+                        <span>${playlist.name}</span>
+                        <small>${playlist.videos.length} videos</small>
+                    </div>
+                    <button class="btn btn-sm btn-outline-primary" onclick="addVideoToPlaylist(${playlist.id}, '${document.getElementById('videoIdInput').value}', 'youtube')">
+                        <i class="bi bi-plus"></i>
+                    </button>
+                `;
+                playlistDropdownList.appendChild(playlistItem);
+            });
+        }
+
+        createNewPlaylistBtn.addEventListener('click', () => {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Create New Playlist</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="text" class="form-control" id="newPlaylistName" placeholder="Enter playlist name...">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" id="confirmCreatePlaylist">Create</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            const modalInstance = new bootstrap.Modal(modal);
+            modalInstance.show();
+
+            document.getElementById('confirmCreatePlaylist').addEventListener('click', () => {
+                const name = document.getElementById('newPlaylistName').value.trim();
+                if (name) {
+                    createPlaylist(name);
+                    modalInstance.hide();
+                    modal.remove();
+                    updatePlaylistDropdown();
+                }
+            });
+
+            modal.addEventListener('hidden.bs.modal', () => {
+                modal.remove();
+            });
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 
