@@ -177,6 +177,10 @@
                             <li><a class="dropdown-item py-2 text-danger" href="#" id="signOutButton"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
                         </ul>
                     </div>
+                    <div class="nav-item" id="authButtons">
+                        <a href="signin.html" class="btn btn-primary me-2">Sign In</a>
+                        <a href="signup.html" class="btn btn-outline-primary">Sign Up</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -339,18 +343,21 @@
             const profilePic = document.getElementById('userProfilePic');
             const userName = document.getElementById('userName');
             const profileDropdown = document.getElementById('profileDropdown');
+            const authButtons = document.getElementById('authButtons');
             
             if (user) {
                 currentUser = user;
                 profilePic.src = user.photoURL || 'https://via.placeholder.com/32';
                 userName.textContent = user.displayName || 'User';
                 profileDropdown.classList.remove('d-none');
+                authButtons.classList.add('d-none');
                 
                 // Load user settings from Firebase
                 await loadUserSettings();
             } else {
                 currentUser = null;
-                window.location.href = 'signin.html';
+                profileDropdown.classList.add('d-none');
+                authButtons.classList.remove('d-none');
             }
         });
 
