@@ -1,0 +1,286 @@
+/* Video Container Styles */
+.video-container {
+    position: relative;
+    width: 100%;
+    background: #000;
+    aspect-ratio: 16/9;
+    margin-bottom: 20px;
+}
+
+.player-option {
+    display: none;
+    width: 100%;
+    height: 100%;
+}
+
+.player-option.active {
+    display: block;
+}
+
+/* Custom Player Styles */
+.custom-player {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    overflow: hidden;
+}
+
+.main-video {
+    width: 100%;
+    height: 100%;
+}
+
+.custom-controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0));
+    padding: 10px;
+    transition: opacity 0.3s;
+    z-index: 1000;
+}
+
+.progress-container {
+    width: 100%;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    position: relative;
+    margin-bottom: 10px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.progress-filled {
+    background: #ff0000;
+    height: 100%;
+    width: 0;
+    transition: width 0.1s;
+}
+
+.progress-hover-time {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 12px;
+    bottom: 100%;
+    transform: translateX(-50%);
+    display: none;
+}
+
+.progress-container:hover .progress-hover-time {
+    display: block;
+}
+
+.controls-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+}
+
+.controls-left, .controls-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.control-btn {
+    background: none;
+    border: none;
+    color: white;
+    padding: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.control-btn:hover {
+    color: #ff0000;
+}
+
+.volume-control {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.volume-slider {
+    width: 80px;
+    height: 4px;
+    -webkit-appearance: none;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    transition: all 0.2s;
+}
+
+.volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    background: white;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.volume-slider:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.time-display {
+    font-size: 14px;
+    color: white;
+    margin: 0 10px;
+}
+
+.playback-panel, .quality-panel {
+    position: absolute;
+    bottom: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    border-radius: 4px;
+    padding: 5px;
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.playback-panel.show, .quality-panel.show {
+    display: flex;
+}
+
+.playback-option, .quality-option {
+    background: none;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s;
+}
+
+.playback-option:hover, .quality-option:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.playback-option.active, .quality-option.active {
+    color: #ff0000;
+}
+
+/* Notes Panel Styles */
+.notes-panel {
+    position: relative;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.notes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.notes-header h4 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.notes-content {
+    padding: 15px;
+}
+
+.notes-content textarea {
+    width: 100%;
+    height: 100px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    resize: vertical;
+    margin-bottom: 10px;
+}
+
+.notes-list {
+    padding: 15px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.note-item {
+    background: #f8f9fa;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.note-timestamp {
+    color: #666;
+    font-size: 12px;
+    cursor: pointer;
+    display: inline-block;
+    padding: 2px 6px;
+    background: #e9ecef;
+    border-radius: 3px;
+}
+
+.note-text {
+    margin-top: 5px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+/* Dark Theme Support */
+[data-bs-theme="dark"] .notes-panel {
+    background: #212529;
+}
+
+[data-bs-theme="dark"] .notes-header {
+    border-bottom-color: #343a40;
+}
+
+[data-bs-theme="dark"] .note-item {
+    background: #343a40;
+}
+
+[data-bs-theme="dark"] .note-timestamp {
+    background: #495057;
+    color: #adb5bd;
+}
+
+[data-bs-theme="dark"] .note-text {
+    color: #e9ecef;
+}
+
+/* Fullscreen Styles */
+.custom-player:fullscreen {
+    width: 100vw;
+    height: 100vh;
+}
+
+.custom-player:fullscreen .main-video {
+    height: 100vh;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .volume-control {
+        display: none;
+    }
+
+    .time-display {
+        font-size: 12px;
+    }
+
+    .control-btn {
+        padding: 3px;
+    }
+} 

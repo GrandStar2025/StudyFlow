@@ -6,6 +6,7 @@
     <title>Study Flow - Video Player</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/customPlayer.css">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -161,13 +162,47 @@
                 <div class="tasks-section mb-4">
                     <h4><i class="bi bi-check2-square"></i> Today's Tasks</h4>
                     <div class="task-input-group mb-3">
-                        <input type="text" class="form-control" id="taskInput" placeholder="Add a new task...">
-                        <button class="btn btn-primary mt-2 w-100" id="addTaskBtn">
-                            <i class="bi bi-plus-circle me-2"></i>Add Task
-                        </button>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="taskInput" placeholder="Add a new task...">
+                            <select class="form-select" id="taskPriority">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                            <input type="time" class="form-control" id="taskTime">
+                            <button class="btn btn-primary" id="addTaskBtn">
+                                <i class="bi bi-plus-circle me-2"></i>Add Task
+                            </button>
+                        </div>
+                    </div>
+                    <div class="task-filters mb-3">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-primary active" data-filter="all">All</button>
+                            <button type="button" class="btn btn-outline-primary" data-filter="pending">Pending</button>
+                            <button type="button" class="btn btn-outline-primary" data-filter="completed">Completed</button>
+                        </div>
+                        <div class="btn-group ms-2" role="group">
+                            <button type="button" class="btn btn-outline-secondary" data-sort="time">
+                                <i class="bi bi-clock"></i> Time
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" data-sort="priority">
+                                <i class="bi bi-arrow-down-up"></i> Priority
+                            </button>
+                        </div>
                     </div>
                     <div id="tasksList">
                         <!-- Tasks will be displayed here -->
+                    </div>
+                    <div class="task-stats mt-3">
+                        <div class="progress">
+                            <div class="progress-bar" id="taskProgress" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <span id="taskStats">0/0 tasks completed</span>
+                            <button class="btn btn-sm btn-outline-danger" id="clearCompletedBtn">
+                                <i class="bi bi-trash"></i> Clear Completed
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -195,6 +230,25 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div id="custom-player" class="custom-player">
+        <!-- Video player will be initialized here -->
+    </div>
+
+    <!-- Notes Panel -->
+    <div class="notes-panel">
+        <div class="notes-header">
+            <h4><i class="bi bi-journal-text"></i> Study Notes</h4>
+            <button class="close-btn"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="notes-content">
+            <textarea id="noteInput" placeholder="Write your notes here..."></textarea>
+            <button id="saveNoteBtn" class="btn btn-primary">Save Note</button>
+        </div>
+        <div id="notesList" class="notes-list">
+            <!-- Notes will be displayed here -->
         </div>
     </div>
 
@@ -587,20 +641,31 @@
         // Tasks functionality
         let tasks = JSON.parse(localStorage.getItem('todayTasks') || '[]');
         const taskInput = document.getElementById('taskInput');
+        const taskPriority = document.getElementById('taskPriority');
+        const taskTime = document.getElementById('taskTime');
         const addTaskBtn = document.getElementById('addTaskBtn');
         const tasksList = document.getElementById('tasksList');
+        const clearCompletedBtn = document.getElementById('clearCompletedBtn');
+        let currentFilter = 'all';
+        let currentSort = 'time';
 
-        function addTask(text) {
+        function addTask(text, priority = 'medium', time = '') {
             const task = {
                 id: Date.now(),
                 text: text,
+                priority: priority,
+                time: time,
                 completed: false,
-                date: new Date().toDateString()
+                date: new Date().toDateString(),
+                createdAt: new Date().toISOString()
             };
             tasks.push(task);
             saveTasks();
             displayTasks();
             taskInput.value = '';
+            taskTime.value = '';
+            taskPriority.value = 'medium';
+            updateTaskStats();
         }
 
         function toggleTask(taskId) {
@@ -609,6 +674,7 @@
                 task.completed = !task.completed;
                 saveTasks();
                 displayTasks();
+                updateTaskStats();
             }
         }
 
@@ -616,39 +682,120 @@
             tasks = tasks.filter(t => t.id !== taskId);
             saveTasks();
             displayTasks();
+            updateTaskStats();
+        }
+
+        function clearCompletedTasks() {
+            if (confirm('Are you sure you want to clear all completed tasks?')) {
+                tasks = tasks.filter(t => !t.completed);
+                saveTasks();
+                displayTasks();
+                updateTaskStats();
+            }
         }
 
         function saveTasks() {
             localStorage.setItem('todayTasks', JSON.stringify(tasks));
         }
 
+        function updateTaskStats() {
+            const totalTasks = tasks.filter(task => task.date === new Date().toDateString()).length;
+            const completedTasks = tasks.filter(task => task.date === new Date().toDateString() && task.completed).length;
+            const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+            
+            document.getElementById('taskProgress').style.width = `${progress}%`;
+            document.getElementById('taskStats').textContent = `${completedTasks}/${totalTasks} tasks completed`;
+        }
+
+        function getPriorityColor(priority) {
+            switch (priority) {
+                case 'high': return 'danger';
+                case 'medium': return 'warning';
+                case 'low': return 'success';
+                default: return 'secondary';
+            }
+        }
+
+        function formatTime(time) {
+            if (!time) return '';
+            const [hours, minutes] = time.split(':');
+            const date = new Date();
+            date.setHours(hours, minutes);
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
         function displayTasks() {
-            // Filter tasks for today
-            const todayTasks = tasks.filter(task => task.date === new Date().toDateString());
+            // Filter tasks for today and current filter
+            let todayTasks = tasks.filter(task => task.date === new Date().toDateString());
+            
+            if (currentFilter === 'pending') {
+                todayTasks = todayTasks.filter(task => !task.completed);
+            } else if (currentFilter === 'completed') {
+                todayTasks = todayTasks.filter(task => task.completed);
+            }
+
+            // Sort tasks
+            todayTasks.sort((a, b) => {
+                if (currentSort === 'time') {
+                    if (a.time && b.time) {
+                        return a.time.localeCompare(b.time);
+                    }
+                    return a.time ? -1 : 1;
+                } else if (currentSort === 'priority') {
+                    const priorityOrder = { high: 0, medium: 1, low: 2 };
+                    return priorityOrder[a.priority] - priorityOrder[b.priority];
+                }
+                return 0;
+            });
             
             tasksList.innerHTML = '';
             todayTasks.forEach(task => {
                 const taskElement = document.createElement('div');
-                taskElement.className = 'task-item';
+                taskElement.className = `task-item priority-${task.priority}`;
                 taskElement.innerHTML = `
                     <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask(${task.id})">
                         ${task.completed ? '<i class="bi bi-check"></i>' : ''}
                     </div>
-                    <div class="task-text ${task.completed ? 'completed' : ''}">${task.text}</div>
-                    <i class="bi bi-trash task-delete" onclick="deleteTask(${task.id})"></i>
+                    <div class="task-content">
+                        <div class="task-text ${task.completed ? 'completed' : ''}">${task.text}</div>
+                        <div class="task-meta">
+                            ${task.time ? `<span class="task-time"><i class="bi bi-clock"></i> ${formatTime(task.time)}</span>` : ''}
+                            <span class="task-priority badge bg-${getPriorityColor(task.priority)}">${task.priority}</span>
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="btn btn-sm btn-outline-primary" onclick="editTask(${task.id})">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteTask(${task.id})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
                 `;
                 tasksList.appendChild(taskElement);
             });
         }
 
+        function editTask(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                taskInput.value = task.text;
+                taskPriority.value = task.priority;
+                taskTime.value = task.time;
+                deleteTask(taskId);
+                taskInput.focus();
+            }
+        }
+
         // Initialize tasks
         displayTasks();
+        updateTaskStats();
 
         // Add task event listeners
         addTaskBtn.addEventListener('click', () => {
             const text = taskInput.value.trim();
             if (text) {
-                addTask(text);
+                addTask(text, taskPriority.value, taskTime.value);
             }
         });
 
@@ -656,14 +803,41 @@
             if (e.key === 'Enter') {
                 const text = taskInput.value.trim();
                 if (text) {
-                    addTask(text);
+                    addTask(text, taskPriority.value, taskTime.value);
                 }
             }
         });
 
+        // Filter and sort event listeners
+        document.querySelectorAll('.task-filters [data-filter]').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.task-filters [data-filter]').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                currentFilter = button.dataset.filter;
+                displayTasks();
+            });
+        });
+
+        document.querySelectorAll('.task-filters [data-sort]').forEach(button => {
+            button.addEventListener('click', () => {
+                if (currentSort === button.dataset.sort) {
+                    currentSort = 'time';
+                    button.classList.remove('active');
+                } else {
+                    document.querySelectorAll('.task-filters [data-sort]').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    currentSort = button.dataset.sort;
+                }
+                displayTasks();
+            });
+        });
+
+        clearCompletedBtn.addEventListener('click', clearCompletedTasks);
+
         // Make functions available globally
         window.toggleTask = toggleTask;
         window.deleteTask = deleteTask;
+        window.editTask = editTask;
 
         // Custom Player Functions
         function initCustomPlayer(startTime = 0) {
