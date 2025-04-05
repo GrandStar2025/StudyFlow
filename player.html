@@ -378,13 +378,18 @@
 
         // Local storage functionality
         function saveNotes() {
-            localStorage.setItem('studyNotes', JSON.stringify(notes));
+            const videoId = new URLSearchParams(window.location.search).get('id');
+            localStorage.setItem(`studyNotes_${videoId}`, JSON.stringify(notes));
         }
 
         function loadNotes() {
-            const savedNotes = localStorage.getItem('studyNotes');
+            const videoId = new URLSearchParams(window.location.search).get('id');
+            const savedNotes = localStorage.getItem(`studyNotes_${videoId}`);
             if (savedNotes) {
                 notes = JSON.parse(savedNotes);
+                displayNotes();
+            } else {
+                notes = []; // Initialize empty notes array for new video
                 displayNotes();
             }
         }
@@ -437,8 +442,10 @@
             localStorage.setItem('studyTimeToday', studyTimeToday.toString());
             document.getElementById('studyTimeToday').textContent = `${studyTimeToday} min`;
 
-            // Update notes count
-            document.getElementById('notesCount').textContent = notes.length.toString();
+            // Update notes count for current video
+            const videoId = new URLSearchParams(window.location.search).get('id');
+            const currentVideoNotes = JSON.parse(localStorage.getItem(`studyNotes_${videoId}`) || '[]');
+            document.getElementById('notesCount').textContent = currentVideoNotes.length.toString();
         }, 60000);
 
         // Tasks functionality

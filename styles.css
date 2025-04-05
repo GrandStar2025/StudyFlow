@@ -1,33 +1,29 @@
 :root {
-    --primary-color: #0d6efd;
-    --primary-hover: #0b5ed7;
-    --bg-light: #f8f9fa;
-    --bg-dark: #212529;
-    --text-light: #333;
-    --text-dark: #fff;
-    --border-light: #e0e0e0;
-    --border-dark: #444;
-    --card-bg-light: #fff;
-    --card-bg-dark: #2d3238;
-    --hover-light: #f8f9fa;
-    --hover-dark: #373b3e;
+    --primary-color: #4361ee;
+    --secondary-color: #3f37c9;
+    --accent-color: #4cc9f0;
+    --success-color: #4caf50;
+    --warning-color: #ff9800;
+    --danger-color: #f72585;
+    --bg-color: #f8f9fa;
+    --card-bg: #ffffff;
+    --text-color: #2b2d42;
+    --border-color: #e9ecef;
+    --hover-bg: #f1f3f5;
 }
 
 [data-bs-theme="dark"] {
-    --primary-color: #0d6efd;
-    --bg-color: var(--bg-dark);
-    --text-color: var(--text-dark);
-    --border-color: var(--border-dark);
-    --card-bg: var(--card-bg-dark);
-    --hover-bg: var(--hover-dark);
-}
-
-[data-bs-theme="light"] {
-    --bg-color: var(--bg-light);
-    --text-color: var(--text-light);
-    --border-color: var(--border-light);
-    --card-bg: var(--card-bg-light);
-    --hover-bg: var(--hover-light);
+    --primary-color: #4361ee;
+    --secondary-color: #3f37c9;
+    --accent-color: #4cc9f0;
+    --success-color: #4caf50;
+    --warning-color: #ff9800;
+    --danger-color: #f72585;
+    --bg-color: #1a1b1e;
+    --card-bg: #2b2d42;
+    --text-color: #f8f9fa;
+    --border-color: #3f3f3f;
+    --hover-bg: #343a40;
 }
 
 body {
@@ -38,41 +34,50 @@ body {
 }
 
 .navbar {
-    background-color: var(--card-bg);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     transition: background-color 0.3s;
 }
 
 .navbar-brand {
-    color: var(--text-color);
+    color: white !important;
     font-weight: 600;
+    font-size: 1.5rem;
 }
 
 .nav-link {
-    color: var(--text-color);
+    color: rgba(255,255,255,0.9) !important;
     opacity: 0.8;
-    transition: opacity 0.3s;
+    transition: all 0.3s ease;
 }
 
 .nav-link:hover, .nav-link.active {
-    color: var(--text-color);
+    color: white !important;
     opacity: 1;
+    transform: translateY(-2px);
 }
 
 .theme-switch-wrapper {
+    background: rgba(255,255,255,0.1);
+    padding: 8px 15px;
+    border-radius: 20px;
     display: flex;
     align-items: center;
 }
 
 .theme-icon {
-    color: var(--text-color);
-    opacity: 0.5;
+    color: white;
     font-size: 1.2rem;
 }
 
+.form-check-input {
+    background-color: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.3);
+}
+
 .form-check-input:checked {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
 }
 
 .welcome-section {
@@ -234,7 +239,7 @@ body {
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-    width: 8px;
+    width: 10px;
 }
 
 ::-webkit-scrollbar-track {
@@ -242,12 +247,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--border-color);
-    border-radius: 4px;
+    background: linear-gradient(var(--primary-color), var(--accent-color));
+    border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--primary-color);
+    background: linear-gradient(var(--secondary-color), var(--primary-color));
 }
 
 /* Player Page Styles */
@@ -257,9 +262,9 @@ body {
     height: 0;
     overflow: hidden;
     background: #000;
-    border-radius: 12px;
+    border-radius: 15px;
     margin-bottom: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
 .video-container iframe {
@@ -276,11 +281,16 @@ body {
     margin-top: 20px;
     padding: 25px;
     background: var(--card-bg);
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     color: var(--text-color);
     border: 1px solid var(--border-color);
     transition: all 0.3s ease;
+}
+
+.notes-section:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
 }
 
 .notes-section h4 {
@@ -302,8 +312,8 @@ body {
 #noteInput {
     background: var(--card-bg);
     color: var(--text-color);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
     padding: 12px;
     font-size: 1rem;
     transition: all 0.3s ease;
@@ -312,8 +322,8 @@ body {
 }
 
 #noteInput:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 0.2rem rgba(76, 201, 240, 0.15);
     outline: none;
 }
 
@@ -323,19 +333,18 @@ body {
 }
 
 .note-item {
-    padding: 15px;
+    background: linear-gradient(135deg, var(--card-bg), var(--hover-bg));
+    border-left: 4px solid var(--accent-color);
+    border-radius: 12px;
+    padding: 20px;
     margin: 15px 0;
-    border-left: 4px solid var(--primary-color);
-    background: var(--hover-bg);
-    color: var(--text-color);
-    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .note-item:hover {
     transform: translateX(5px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .note-time {
@@ -396,9 +405,10 @@ body {
 }
 
 .recording-controls {
+    background: linear-gradient(135deg, var(--card-bg), var(--hover-bg));
+    border-radius: 12px;
+    padding: 15px;
     margin: 20px 0;
-    display: flex;
-    gap: 12px;
 }
 
 .recording-controls .btn {
@@ -421,13 +431,11 @@ body {
 }
 
 .audio-player {
-    width: 100%;
-    margin: 12px 0;
-    background: var(--card-bg);
-    border-radius: 8px;
+    background: linear-gradient(135deg, var(--card-bg), var(--hover-bg));
+    border-radius: 10px;
+    padding: 10px;
+    margin: 10px 0;
     border: 1px solid var(--border-color);
-    padding: 8px;
-    transition: all 0.3s ease;
 }
 
 /* Add animation for new notes */
@@ -479,11 +487,16 @@ body {
 /* Performance Section Styles */
 .performance-section, .tasks-section {
     background: var(--card-bg);
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     border: 1px solid var(--border-color);
     transition: all 0.3s ease;
+}
+
+.performance-section:hover, .tasks-section:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
 }
 
 .performance-section h4, .tasks-section h4 {
@@ -507,10 +520,17 @@ body {
 }
 
 .stat-card {
-    background: var(--hover-bg);
+    background: linear-gradient(135deg, var(--card-bg), var(--hover-bg));
+    border-radius: 12px;
     padding: 15px;
-    border-radius: 8px;
+    margin-bottom: 15px;
     border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .stat-label {
@@ -528,12 +548,13 @@ body {
 
 .progress {
     height: 8px;
-    background-color: var(--border-color);
-    margin: 8px 0;
+    background-color: var(--hover-bg);
+    border-radius: 4px;
+    overflow: hidden;
 }
 
 .progress-bar {
-    background-color: var(--primary-color);
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
     transition: width 0.3s ease;
 }
 
@@ -545,49 +566,49 @@ body {
 #taskInput {
     background: var(--card-bg);
     color: var(--text-color);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
     padding: 12px;
     font-size: 1rem;
     transition: all 0.3s ease;
 }
 
 #taskInput:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 0.2rem rgba(76, 201, 240, 0.15);
     outline: none;
 }
 
 .task-item {
+    background: linear-gradient(135deg, var(--card-bg), var(--hover-bg));
+    border-radius: 10px;
+    padding: 12px 15px;
+    margin: 8px 0;
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 12px;
-    background: var(--hover-bg);
-    border-radius: 8px;
-    margin-bottom: 8px;
-    border: 1px solid var(--border-color);
+    gap: 12px;
     transition: all 0.3s ease;
 }
 
 .task-item:hover {
     transform: translateX(5px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .task-checkbox {
-    width: 20px;
-    height: 20px;
-    border-radius: 4px;
+    width: 24px;
+    height: 24px;
     border: 2px solid var(--primary-color);
-    cursor: pointer;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
     transition: all 0.3s ease;
 }
 
 .task-checkbox.checked {
-    background-color: var(--primary-color);
+    background: var(--primary-color);
     color: white;
 }
 
@@ -628,4 +649,37 @@ body {
 
 .task-item {
     animation: slideInTask 0.3s ease-out;
+}
+
+/* Add some animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.note-item, .task-item {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border: none;
+    box-shadow: 0 2px 8px rgba(67, 97, 238, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(67, 97, 238, 0.4);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, var(--danger-color), #b5179e);
+    border: none;
+    box-shadow: 0 2px 8px rgba(247, 37, 133, 0.3);
+}
+
+.btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(247, 37, 133, 0.4);
 } 
