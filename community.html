@@ -97,25 +97,60 @@
             padding: 0.75rem 1rem;
             border-radius: 12px;
             position: relative;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
         }
 
         .message.sent {
-            background: var(--primary-color);
+            background: #4169E1;
             color: white;
             align-self: flex-end;
-            border-bottom-right-radius: 4px;
+            border-radius: 16px 16px 4px 16px;
+            margin-left: auto;
+            flex-direction: row-reverse;
         }
 
         .message.received {
-            background: rgba(var(--primary-rgb), 0.1);
+            background: #F0F2F5;
+            color: var(--text-color);
             align-self: flex-start;
-            border-bottom-left-radius: 4px;
+            border-radius: 16px 16px 16px 4px;
+        }
+
+        .message-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message-text {
+            margin-bottom: 4px;
         }
 
         .message-time {
             font-size: 0.75rem;
             opacity: 0.8;
-            margin-top: 4px;
+            margin-top: 2px;
+            color: inherit;
+        }
+
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .message.sent .message-time {
+            text-align: right;
+        }
+
+        .message.received .message-avatar {
+            margin-right: 8px;
+        }
+
+        .message.sent .message-avatar {
+            margin-left: 8px;
         }
 
         .chat-input {
@@ -233,6 +268,15 @@
                 <!-- Users List -->
                 <div class="users-list">
                     <h5 class="mb-3">Online Users</h5>
+                    <div class="world-chat-option mb-3">
+                        <div class="user-item active" id="worldChatOption">
+                            <img src="images/world.png" alt="World Chat" class="user-avatar" style="width: 40px; height: 40px; object-fit: cover; background: #6610f2; border-radius: 50%;">
+                            <div class="user-info">
+                                <div class="user-name">World Chat</div>
+                            </div>
+                            <div class="user-status online"></div>
+                        </div>
+                    </div>
                     <div id="usersList">
                         <!-- Users will be listed here -->
                     </div>
@@ -241,17 +285,17 @@
                 <!-- Chat Area -->
                 <div class="chat-area">
                     <div class="chat-header">
-                        <img id="activeChatUserAvatar" src="" alt="User" class="user-avatar">
+                        <img id="activeChatUserAvatar" src="images/world.png" alt="World Chat" class="user-avatar" style="background: #6610f2;">
                         <div>
-                            <h5 id="activeChatUserName" class="mb-0">Welcome to Study Flow Chat</h5>
-                            <small id="activeChatUserStatus" class="text-muted">Select a user to start chatting</small>
+                            <h5 id="activeChatUserName" class="mb-0">World Chat</h5>
+                            <small id="activeChatUserStatus" class="text-muted">All users can chat here</small>
                         </div>
                     </div>
 
                     <div class="messages-container" id="messagesContainer">
                         <div class="empty-state">
                             <i class="bi bi-chat-dots"></i>
-                            <p>Select a user to start chatting</p>
+                            <p>Welcome to World Chat! Start the conversation!</p>
                         </div>
                     </div>
 
