@@ -6,7 +6,6 @@
     <title>Study Flow - Video Player</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="css/customPlayer.css">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -24,10 +23,6 @@
                     <i class="bi bi-clock-history"></i>
                     Watch History
                 </a>
-                <a href="playlists.html" class="nav-link">
-                    <i class="bi bi-collection-play"></i>
-                    Playlists
-                </a>
             </div>
             <div class="theme-switch-wrapper ms-auto">
                 <i class="bi bi-sun-fill theme-icon light-icon"></i>
@@ -42,97 +37,8 @@
     <div class="container mt-4">
         <div class="row">
             <div class="col-lg-8">
-                <div class="video-selector mb-3">
-                    <div class="input-group">
-                        <input type="text" class="form-control" id="videoIdInput" placeholder="Enter YouTube video ID or local video name...">
-                        <div class="input-group-append">
-                            <button class="btn btn-primary" id="loadVideoBtn">
-                                <i class="bi bi-play-fill me-2"></i>Load Video
-                            </button>
-                            <button class="btn btn-outline-primary" id="playlistDropdownBtn">
-                                <i class="bi bi-plus-circle"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="playlist-dropdown" id="playlistDropdown">
-                        <div class="playlist-dropdown-header">
-                            <h6>Add to Playlist</h6>
-                            <button class="btn btn-sm btn-primary" id="createNewPlaylistBtn">
-                                <i class="bi bi-plus-circle me-1"></i>New Playlist
-                            </button>
-                        </div>
-                        <div class="playlist-dropdown-list" id="playlistDropdownList">
-                            <!-- Playlists will be listed here -->
-                        </div>
-                    </div>
-                </div>
-                <div class="player-selector mb-3">
-                    <div class="btn-group w-100" role="group" aria-label="Player selector">
-                        <button type="button" class="btn btn-outline-primary active" id="youtubePlayerBtn">
-                            <i class="bi bi-youtube"></i> YouTube Player
-                        </button>
-                        <button type="button" class="btn btn-outline-primary" id="customPlayerBtn">
-                            <i class="bi bi-play-circle"></i> Study Flow Player
-                        </button>
-                    </div>
-                </div>
                 <div class="video-container">
-                    <div id="youtube-player" class="player-option active"></div>
-                    <div id="custom-player" class="player-option">
-                        <div class="video-wrapper">
-                            <video id="video">
-                                Your browser does not support the video tag.
-                            </video>
-                            <div class="custom-controls">
-                                <div class="progress-container">
-                                    <div class="progress-bar">
-                                        <div class="progress-filled"></div>
-                                    </div>
-                                    <div class="progress-hover-time">0:00</div>
-                                </div>
-                                <div class="controls-main">
-                                    <div class="controls-left">
-                                        <button class="control-btn" id="playPauseBtn">
-                                            <i class="bi bi-play-fill"></i>
-                                        </button>
-                                        <div class="volume-control">
-                                            <button class="control-btn" id="muteBtn">
-                                                <i class="bi bi-volume-up-fill"></i>
-                                            </button>
-                                            <div class="volume-slider-container">
-                                                <input type="range" id="volumeSlider" min="0" max="100" value="100">
-                                                <div class="volume-progress"></div>
-                                            </div>
-                                        </div>
-                                        <div class="time-display">
-                                            <span id="currentTime">0:00</span>
-                                            <span class="time-separator">/</span>
-                                            <span id="duration">0:00</span>
-                                        </div>
-                                    </div>
-                                    <div class="controls-right">
-                                        <div class="playback-control">
-                                            <button class="control-btn" id="playbackBtn">
-                                                <i class="bi bi-speedometer2"></i>
-                                                <span id="playbackDisplay">1x</span>
-                                            </button>
-                                            <div class="playback-options">
-                                                <button data-speed="0.5">0.5x</button>
-                                                <button data-speed="0.75">0.75x</button>
-                                                <button data-speed="1" class="active">1x</button>
-                                                <button data-speed="1.25">1.25x</button>
-                                                <button data-speed="1.5">1.5x</button>
-                                                <button data-speed="2">2x</button>
-                                            </div>
-                                        </div>
-                                        <button class="control-btn" id="fullscreenBtn">
-                                            <i class="bi bi-fullscreen"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <div id="youtube-player"></div>
                 </div>
             </div>
             <div class="col-lg-4">
@@ -162,53 +68,19 @@
                 <div class="tasks-section mb-4">
                     <h4><i class="bi bi-check2-square"></i> Today's Tasks</h4>
                     <div class="task-input-group mb-3">
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="taskInput" placeholder="Add a new task...">
-                            <select class="form-select" id="taskPriority">
-                                <option value="low">Low</option>
-                                <option value="medium" selected>Medium</option>
-                                <option value="high">High</option>
-                            </select>
-                            <input type="time" class="form-control" id="taskTime">
-                            <button class="btn btn-primary" id="addTaskBtn">
-                                <i class="bi bi-plus-circle me-2"></i>Add Task
-                            </button>
-                        </div>
-                    </div>
-                    <div class="task-filters mb-3">
-                        <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-outline-primary active" data-filter="all">All</button>
-                            <button type="button" class="btn btn-outline-primary" data-filter="pending">Pending</button>
-                            <button type="button" class="btn btn-outline-primary" data-filter="completed">Completed</button>
-                        </div>
-                        <div class="btn-group ms-2" role="group">
-                            <button type="button" class="btn btn-outline-secondary" data-sort="time">
-                                <i class="bi bi-clock"></i> Time
-                            </button>
-                            <button type="button" class="btn btn-outline-secondary" data-sort="priority">
-                                <i class="bi bi-arrow-down-up"></i> Priority
-                            </button>
-                        </div>
+                        <input type="text" class="form-control" id="taskInput" placeholder="Add a new task...">
+                        <button class="btn btn-primary mt-2 w-100" id="addTaskBtn">
+                            <i class="bi bi-plus-circle me-2"></i>Add Task
+                        </button>
                     </div>
                     <div id="tasksList">
                         <!-- Tasks will be displayed here -->
-                    </div>
-                    <div class="task-stats mt-3">
-                        <div class="progress">
-                            <div class="progress-bar" id="taskProgress" role="progressbar" style="width: 0%"></div>
-                        </div>
-                        <div class="d-flex justify-content-between mt-2">
-                            <span id="taskStats">0/0 tasks completed</span>
-                            <button class="btn btn-sm btn-outline-danger" id="clearCompletedBtn">
-                                <i class="bi bi-trash"></i> Clear Completed
-                            </button>
-                        </div>
                     </div>
                 </div>
 
                 <!-- Notes Section -->
                 <div class="notes-section">
-                    <h4><i class="bi bi-journal-text"></i> Study Notes</h4>
+                    <h4>Study Notes</h4>
                     <div class="mb-3">
                         <div class="input-group">
                             <textarea class="form-control" id="noteInput" rows="3" placeholder="Write your study notes here..."></textarea>
@@ -233,76 +105,7 @@
         </div>
     </div>
 
-    <div id="custom-player" class="custom-player">
-        <!-- Video player will be initialized here -->
-    </div>
-
-    <!-- Notes Panel -->
-    <div class="notes-panel">
-        <div class="notes-header">
-            <h4><i class="bi bi-journal-text"></i> Study Notes</h4>
-            <button class="close-btn"><i class="bi bi-x-lg"></i></button>
-        </div>
-        <div class="notes-content">
-            <textarea id="noteInput" placeholder="Write your notes here..."></textarea>
-            <button id="saveNoteBtn" class="btn btn-primary">Save Note</button>
-        </div>
-        <div id="notesList" class="notes-list">
-            <!-- Notes will be displayed here -->
-        </div>
-    </div>
-
     <script>
-        // Add this at the beginning of your script section
-        const youtubePlayerBtn = document.getElementById('youtubePlayerBtn');
-        const customPlayerBtn = document.getElementById('customPlayerBtn');
-        const youtubePlayerContainer = document.getElementById('youtube-player');
-        const customPlayerContainer = document.getElementById('custom-player');
-        let currentPlayer = 'youtube';
-
-        youtubePlayerBtn.addEventListener('click', () => {
-            if (currentPlayer !== 'youtube') {
-                // Stop Study Flow player
-                const video = document.getElementById('video');
-                video.pause();
-                video.removeAttribute('src');
-                video.load();
-                
-                // Switch to YouTube player
-                youtubePlayerBtn.classList.add('active');
-                customPlayerBtn.classList.remove('active');
-                youtubePlayerContainer.classList.add('active');
-                customPlayerContainer.classList.remove('active');
-                currentPlayer = 'youtube';
-                
-                // Initialize YouTube player
-                const currentTime = video.currentTime || 0;
-                initYouTubePlayer(currentTime);
-            }
-        });
-
-        customPlayerBtn.addEventListener('click', () => {
-            if (currentPlayer !== 'custom') {
-                // Get current time from YouTube player if available
-                const currentTime = player ? player.getCurrentTime() : 0;
-                
-                // Stop YouTube player
-                if (player) {
-                    player.pauseVideo();
-                }
-                
-                // Switch to Study Flow player
-                customPlayerBtn.classList.add('active');
-                youtubePlayerBtn.classList.remove('active');
-                customPlayerContainer.classList.add('active');
-                youtubePlayerContainer.classList.remove('active');
-                currentPlayer = 'custom';
-                
-                // Initialize Study Flow player
-                initCustomPlayer(currentTime);
-            }
-        });
-
         // Initialize YouTube Player
         var tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
@@ -641,31 +444,20 @@
         // Tasks functionality
         let tasks = JSON.parse(localStorage.getItem('todayTasks') || '[]');
         const taskInput = document.getElementById('taskInput');
-        const taskPriority = document.getElementById('taskPriority');
-        const taskTime = document.getElementById('taskTime');
         const addTaskBtn = document.getElementById('addTaskBtn');
         const tasksList = document.getElementById('tasksList');
-        const clearCompletedBtn = document.getElementById('clearCompletedBtn');
-        let currentFilter = 'all';
-        let currentSort = 'time';
 
-        function addTask(text, priority = 'medium', time = '') {
+        function addTask(text) {
             const task = {
                 id: Date.now(),
                 text: text,
-                priority: priority,
-                time: time,
                 completed: false,
-                date: new Date().toDateString(),
-                createdAt: new Date().toISOString()
+                date: new Date().toDateString()
             };
             tasks.push(task);
             saveTasks();
             displayTasks();
             taskInput.value = '';
-            taskTime.value = '';
-            taskPriority.value = 'medium';
-            updateTaskStats();
         }
 
         function toggleTask(taskId) {
@@ -674,7 +466,6 @@
                 task.completed = !task.completed;
                 saveTasks();
                 displayTasks();
-                updateTaskStats();
             }
         }
 
@@ -682,120 +473,39 @@
             tasks = tasks.filter(t => t.id !== taskId);
             saveTasks();
             displayTasks();
-            updateTaskStats();
-        }
-
-        function clearCompletedTasks() {
-            if (confirm('Are you sure you want to clear all completed tasks?')) {
-                tasks = tasks.filter(t => !t.completed);
-                saveTasks();
-                displayTasks();
-                updateTaskStats();
-            }
         }
 
         function saveTasks() {
             localStorage.setItem('todayTasks', JSON.stringify(tasks));
         }
 
-        function updateTaskStats() {
-            const totalTasks = tasks.filter(task => task.date === new Date().toDateString()).length;
-            const completedTasks = tasks.filter(task => task.date === new Date().toDateString() && task.completed).length;
-            const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
-            
-            document.getElementById('taskProgress').style.width = `${progress}%`;
-            document.getElementById('taskStats').textContent = `${completedTasks}/${totalTasks} tasks completed`;
-        }
-
-        function getPriorityColor(priority) {
-            switch (priority) {
-                case 'high': return 'danger';
-                case 'medium': return 'warning';
-                case 'low': return 'success';
-                default: return 'secondary';
-            }
-        }
-
-        function formatTime(time) {
-            if (!time) return '';
-            const [hours, minutes] = time.split(':');
-            const date = new Date();
-            date.setHours(hours, minutes);
-            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        }
-
         function displayTasks() {
-            // Filter tasks for today and current filter
-            let todayTasks = tasks.filter(task => task.date === new Date().toDateString());
-            
-            if (currentFilter === 'pending') {
-                todayTasks = todayTasks.filter(task => !task.completed);
-            } else if (currentFilter === 'completed') {
-                todayTasks = todayTasks.filter(task => task.completed);
-            }
-
-            // Sort tasks
-            todayTasks.sort((a, b) => {
-                if (currentSort === 'time') {
-                    if (a.time && b.time) {
-                        return a.time.localeCompare(b.time);
-                    }
-                    return a.time ? -1 : 1;
-                } else if (currentSort === 'priority') {
-                    const priorityOrder = { high: 0, medium: 1, low: 2 };
-                    return priorityOrder[a.priority] - priorityOrder[b.priority];
-                }
-                return 0;
-            });
+            // Filter tasks for today
+            const todayTasks = tasks.filter(task => task.date === new Date().toDateString());
             
             tasksList.innerHTML = '';
             todayTasks.forEach(task => {
                 const taskElement = document.createElement('div');
-                taskElement.className = `task-item priority-${task.priority}`;
+                taskElement.className = 'task-item';
                 taskElement.innerHTML = `
                     <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask(${task.id})">
                         ${task.completed ? '<i class="bi bi-check"></i>' : ''}
                     </div>
-                    <div class="task-content">
-                        <div class="task-text ${task.completed ? 'completed' : ''}">${task.text}</div>
-                        <div class="task-meta">
-                            ${task.time ? `<span class="task-time"><i class="bi bi-clock"></i> ${formatTime(task.time)}</span>` : ''}
-                            <span class="task-priority badge bg-${getPriorityColor(task.priority)}">${task.priority}</span>
-                        </div>
-                    </div>
-                    <div class="task-actions">
-                        <button class="btn btn-sm btn-outline-primary" onclick="editTask(${task.id})">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteTask(${task.id})">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </div>
+                    <div class="task-text ${task.completed ? 'completed' : ''}">${task.text}</div>
+                    <i class="bi bi-trash task-delete" onclick="deleteTask(${task.id})"></i>
                 `;
                 tasksList.appendChild(taskElement);
             });
         }
 
-        function editTask(taskId) {
-            const task = tasks.find(t => t.id === taskId);
-            if (task) {
-                taskInput.value = task.text;
-                taskPriority.value = task.priority;
-                taskTime.value = task.time;
-                deleteTask(taskId);
-                taskInput.focus();
-            }
-        }
-
         // Initialize tasks
         displayTasks();
-        updateTaskStats();
 
         // Add task event listeners
         addTaskBtn.addEventListener('click', () => {
             const text = taskInput.value.trim();
             if (text) {
-                addTask(text, taskPriority.value, taskTime.value);
+                addTask(text);
             }
         });
 
@@ -803,448 +513,14 @@
             if (e.key === 'Enter') {
                 const text = taskInput.value.trim();
                 if (text) {
-                    addTask(text, taskPriority.value, taskTime.value);
+                    addTask(text);
                 }
             }
         });
-
-        // Filter and sort event listeners
-        document.querySelectorAll('.task-filters [data-filter]').forEach(button => {
-            button.addEventListener('click', () => {
-                document.querySelectorAll('.task-filters [data-filter]').forEach(btn => btn.classList.remove('active'));
-                button.classList.add('active');
-                currentFilter = button.dataset.filter;
-                displayTasks();
-            });
-        });
-
-        document.querySelectorAll('.task-filters [data-sort]').forEach(button => {
-            button.addEventListener('click', () => {
-                if (currentSort === button.dataset.sort) {
-                    currentSort = 'time';
-                    button.classList.remove('active');
-                } else {
-                    document.querySelectorAll('.task-filters [data-sort]').forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
-                    currentSort = button.dataset.sort;
-                }
-                displayTasks();
-            });
-        });
-
-        clearCompletedBtn.addEventListener('click', clearCompletedTasks);
 
         // Make functions available globally
         window.toggleTask = toggleTask;
         window.deleteTask = deleteTask;
-        window.editTask = editTask;
-
-        // Custom Player Functions
-        function initCustomPlayer(startTime = 0) {
-            const video = document.getElementById('video');
-            const urlParams = new URLSearchParams(window.location.search);
-            const videoId = urlParams.get('id');
-            
-            if (!videoId) {
-                alert('Please provide a video ID in the URL (e.g., ?id=video1)');
-                return;
-            }
-
-            // Clear previous video source and error handlers
-            video.removeAttribute('src');
-            video.load();
-
-            // Set video source
-            const videoPath = `videos/${videoId}.mp4`;
-            
-            // Check if video file exists
-            fetch(videoPath, { method: 'HEAD' })
-                .then(response => {
-                    if (response.ok) {
-                        // Video exists, load it
-                        video.src = videoPath;
-                        
-                        // Initialize controls
-                        initCustomControls();
-                        
-                        // Set up event listeners
-                        video.addEventListener('loadedmetadata', () => {
-                            video.currentTime = startTime;
-                            updateDurationDisplay();
-                            video.play().catch(error => {
-                                console.error('Error playing video:', error);
-                            });
-                        });
-
-                        // Progress tracking
-                        video.addEventListener('timeupdate', () => {
-                            updateTimeDisplay();
-                            updateProgressBar();
-                            saveVideoProgress();
-                        });
-
-                        // Load saved progress
-                        loadSavedProgress();
-                    } else {
-                        alert(`Video file not found: ${videoId}.mp4\n\nPlease make sure to:\n1. Place your video in the 'videos' folder\n2. Name it as '${videoId}.mp4'\n3. Refresh the page`);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error checking video:', error);
-                    alert('Error checking video file. Please make sure the video exists and try again.');
-                });
-        }
-
-        function initCustomControls() {
-            const video = document.getElementById('video');
-            const container = document.getElementById('custom-player');
-            const controls = container.querySelector('.custom-controls');
-            const playPauseBtn = document.getElementById('playPauseBtn');
-            const muteBtn = document.getElementById('muteBtn');
-            const volumeSlider = document.getElementById('volumeSlider');
-            const progressBar = container.querySelector('.progress-bar');
-            const progressFilled = container.querySelector('.progress-filled');
-            const progressHoverTime = container.querySelector('.progress-hover-time');
-            const fullscreenBtn = document.getElementById('fullscreenBtn');
-            const playbackBtn = document.getElementById('playbackBtn');
-            const playbackOptions = container.querySelector('.playback-options');
-            
-            // Play/Pause
-            playPauseBtn.addEventListener('click', togglePlay);
-            video.addEventListener('click', togglePlay);
-            
-            function togglePlay() {
-                if (video.paused) {
-                    video.play();
-                    playPauseBtn.innerHTML = '<i class="bi bi-pause-fill"></i>';
-                } else {
-                    video.pause();
-                    playPauseBtn.innerHTML = '<i class="bi bi-play-fill"></i>';
-                }
-            }
-
-            // Volume Control
-            volumeSlider.addEventListener('input', (e) => {
-                const value = e.target.value;
-                video.volume = value / 100;
-                updateVolumeDisplay(value);
-            });
-
-            muteBtn.addEventListener('click', () => {
-                video.muted = !video.muted;
-                updateVolumeDisplay(video.muted ? 0 : volumeSlider.value);
-            });
-
-            function updateVolumeDisplay(value) {
-                const volumeProgress = container.querySelector('.volume-progress');
-                volumeProgress.style.width = `${value}%`;
-                
-                const icon = muteBtn.querySelector('i');
-                if (value === 0 || video.muted) {
-                    icon.className = 'bi bi-volume-mute-fill';
-                } else if (value < 50) {
-                    icon.className = 'bi bi-volume-down-fill';
-                } else {
-                    icon.className = 'bi bi-volume-up-fill';
-                }
-            }
-
-            // Progress Bar
-            progressBar.addEventListener('mousedown', (e) => {
-                const pos = (e.pageX - progressBar.offsetLeft) / progressBar.offsetWidth;
-                video.currentTime = pos * video.duration;
-                
-                // Enable dragging
-                document.addEventListener('mousemove', dragProgress);
-                document.addEventListener('mouseup', stopDragProgress);
-            });
-
-            progressBar.addEventListener('mousemove', (e) => {
-                const pos = (e.pageX - progressBar.offsetLeft) / progressBar.offsetWidth;
-                const time = pos * video.duration;
-                progressHoverTime.textContent = formatTime(time);
-                progressHoverTime.style.left = `${e.pageX - progressBar.offsetLeft}px`;
-            });
-
-            function dragProgress(e) {
-                const pos = (e.pageX - progressBar.offsetLeft) / progressBar.offsetWidth;
-                video.currentTime = pos * video.duration;
-            }
-
-            function stopDragProgress() {
-                document.removeEventListener('mousemove', dragProgress);
-                document.removeEventListener('mouseup', stopDragProgress);
-            }
-
-            // Playback Speed
-            playbackBtn.addEventListener('click', () => {
-                playbackOptions.classList.toggle('show');
-            });
-
-            playbackOptions.querySelectorAll('button').forEach(button => {
-                button.addEventListener('click', () => {
-                    const speed = parseFloat(button.dataset.speed);
-                    video.playbackRate = speed;
-                    document.getElementById('playbackDisplay').textContent = `${speed}x`;
-                    
-                    // Update active state
-                    playbackOptions.querySelectorAll('button').forEach(btn => {
-                        btn.classList.remove('active');
-                    });
-                    button.classList.add('active');
-                    
-                    playbackOptions.classList.remove('show');
-                });
-            });
-
-            // Fullscreen
-            fullscreenBtn.addEventListener('click', () => {
-                if (!document.fullscreenElement) {
-                    container.requestFullscreen();
-                    fullscreenBtn.innerHTML = '<i class="bi bi-fullscreen-exit"></i>';
-                } else {
-                    document.exitFullscreen();
-                    fullscreenBtn.innerHTML = '<i class="bi bi-fullscreen"></i>';
-                }
-            });
-
-            // Hide controls when mouse is inactive
-            let controlsTimeout;
-            container.addEventListener('mousemove', () => {
-                controls.style.opacity = '1';
-                clearTimeout(controlsTimeout);
-                controlsTimeout = setTimeout(() => {
-                    if (!video.paused) {
-                        controls.style.opacity = '0';
-                    }
-                }, 2000);
-            });
-
-            container.addEventListener('mouseleave', () => {
-                if (!video.paused) {
-                    controls.style.opacity = '0';
-                }
-            });
-        }
-
-        function updateTimeDisplay() {
-            const video = document.getElementById('video');
-            const currentTimeEl = document.getElementById('currentTime');
-            currentTimeEl.textContent = formatTime(video.currentTime);
-        }
-
-        function updateDurationDisplay() {
-            const video = document.getElementById('video');
-            const durationEl = document.getElementById('duration');
-            durationEl.textContent = formatTime(video.duration);
-        }
-
-        function updateProgressBar() {
-            const video = document.getElementById('video');
-            const progressFilled = document.querySelector('.progress-filled');
-            const progress = (video.currentTime / video.duration) * 100;
-            progressFilled.style.width = `${progress}%`;
-        }
-
-        function saveVideoProgress() {
-            const video = document.getElementById('video');
-            const videoId = new URLSearchParams(window.location.search).get('id');
-            const progress = (video.currentTime / video.duration) * 100;
-            
-            localStorage.setItem(`videoProgress_${videoId}`, JSON.stringify({
-                id: videoId,
-                currentTime: video.currentTime,
-                duration: video.duration,
-                progress: progress,
-                lastUpdated: new Date().toISOString()
-            }));
-
-            // Update progress bar in performance section
-            document.getElementById('videoProgress').style.width = `${progress}%`;
-            document.getElementById('videoProgressText').textContent = `${Math.round(progress)}%`;
-        }
-
-        function loadSavedProgress() {
-            const video = document.getElementById('video');
-            const videoId = new URLSearchParams(window.location.search).get('id');
-            const savedProgress = localStorage.getItem(`videoProgress_${videoId}`);
-            
-            if (savedProgress) {
-                const { currentTime } = JSON.parse(savedProgress);
-                if (currentTime && !isNaN(currentTime)) {
-                    video.currentTime = currentTime;
-                }
-            }
-        }
-
-        // Update YouTube player initialization
-        function initYouTubePlayer(startTime = 0) {
-            const urlParams = new URLSearchParams(window.location.search);
-            const videoId = urlParams.get('id');
-            
-            if (!videoId) {
-                alert('No video ID provided!');
-                return;
-            }
-
-            if (player) {
-                player.loadVideoById({
-                    videoId: videoId,
-                    startSeconds: startTime
-                });
-            } else {
-                player = new YT.Player('youtube-player', {
-                    height: '100%',
-                    width: '100%',
-                    videoId: videoId,
-                    playerVars: {
-                        'autoplay': 1,
-                        'modestbranding': 1,
-                        'rel': 0,
-                        'showinfo': 0,
-                        'controls': 1,
-                        'fs': 1,
-                        'playsinline': 1,
-                        'start': Math.floor(startTime)
-                    },
-                    events: {
-                        'onReady': onPlayerReady,
-                        'onStateChange': onPlayerStateChange,
-                        'onError': onPlayerError
-                    }
-                });
-            }
-        }
-
-        // Add this helper function to check if a file exists
-        function checkFileExists(url) {
-            return new Promise((resolve) => {
-                fetch(url, { method: 'HEAD' })
-                    .then(response => resolve(response.ok))
-                    .catch(() => resolve(false));
-            });
-        }
-
-        // Add playlist functionality
-        let playlists = JSON.parse(localStorage.getItem('playlists') || '[]');
-
-        function addVideoToPlaylist(playlistId, videoId, videoType = 'youtube') {
-            const playlist = playlists.find(p => p.id === playlistId);
-            if (playlist) {
-                const video = {
-                    id: videoId,
-                    type: videoType,
-                    addedAt: new Date().toISOString()
-                };
-                if (!playlist.videos.some(v => v.id === videoId)) {
-                    playlist.videos.push(video);
-                    savePlaylists();
-                    updatePlaylistDropdown();
-                    playlistDropdown.classList.remove('show');
-                } else {
-                    alert('This video is already in the playlist!');
-                }
-            }
-        }
-
-        function savePlaylists() {
-            localStorage.setItem('playlists', JSON.stringify(playlists));
-        }
-
-        function playVideo(videoId, videoType) {
-            const url = new URL(window.location.href);
-            url.searchParams.set('id', videoId);
-            url.searchParams.set('type', videoType);
-            window.history.pushState({}, '', url);
-            
-            if (videoType === 'youtube') {
-                initYouTubePlayer();
-            } else {
-                initCustomPlayer();
-            }
-        }
-
-        // Add playlist dropdown functionality
-        const playlistDropdownBtn = document.getElementById('playlistDropdownBtn');
-        const playlistDropdown = document.getElementById('playlistDropdown');
-        const createNewPlaylistBtn = document.getElementById('createNewPlaylistBtn');
-        const playlistDropdownList = document.getElementById('playlistDropdownList');
-
-        playlistDropdownBtn.addEventListener('click', () => {
-            playlistDropdown.classList.toggle('show');
-            updatePlaylistDropdown();
-        });
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!playlistDropdown.contains(e.target) && !playlistDropdownBtn.contains(e.target)) {
-                playlistDropdown.classList.remove('show');
-            }
-        });
-
-        function updatePlaylistDropdown() {
-            playlistDropdownList.innerHTML = '';
-            if (playlists.length === 0) {
-                playlistDropdownList.innerHTML = '<div class="no-playlists">No playlists yet</div>';
-                return;
-            }
-
-            playlists.forEach(playlist => {
-                const playlistItem = document.createElement('div');
-                playlistItem.className = 'playlist-dropdown-item';
-                playlistItem.innerHTML = `
-                    <div class="playlist-dropdown-info">
-                        <i class="bi bi-collection-play"></i>
-                        <span>${playlist.name}</span>
-                        <small>${playlist.videos.length} videos</small>
-                    </div>
-                    <button class="btn btn-sm btn-outline-primary" onclick="addVideoToPlaylist(${playlist.id}, '${document.getElementById('videoIdInput').value}', 'youtube')">
-                        <i class="bi bi-plus"></i>
-                    </button>
-                `;
-                playlistDropdownList.appendChild(playlistItem);
-            });
-        }
-
-        createNewPlaylistBtn.addEventListener('click', () => {
-            const modal = document.createElement('div');
-            modal.className = 'modal fade';
-            modal.innerHTML = `
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Create New Playlist</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <input type="text" class="form-control" id="newPlaylistName" placeholder="Enter playlist name...">
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="button" class="btn btn-primary" id="confirmCreatePlaylist">Create</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            document.body.appendChild(modal);
-            const modalInstance = new bootstrap.Modal(modal);
-            modalInstance.show();
-
-            document.getElementById('confirmCreatePlaylist').addEventListener('click', () => {
-                const name = document.getElementById('newPlaylistName').value.trim();
-                if (name) {
-                    createPlaylist(name);
-                    modalInstance.hide();
-                    modal.remove();
-                    updatePlaylistDropdown();
-                }
-            });
-
-            modal.addEventListener('hidden.bs.modal', () => {
-                modal.remove();
-            });
-        });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
