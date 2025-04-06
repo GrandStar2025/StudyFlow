@@ -1,6 +1,6 @@
 // Import Firebase modules
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-import { getDatabase, ref, set, get, push, remove, update } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js';
+import { getDatabase, ref, set, get, push, remove, update, onValue } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js';
 
 // Firebase configuration
 const firebaseConfig = {
@@ -269,4 +269,43 @@ export async function getLastSearch(userId) {
         console.error('Error getting last search:', error);
         throw error;
     }
+}
+
+// Real-time Listeners
+export function setupRealtimeListeners(userId, callbacks) {
+    // Notes listener
+    const notesRef = ref(db, `users/${userId}/notes`);
+    onValue(notesRef, (snapshot) => {
+        const notes = snapshot.val() || {};
+        if (callbacks.onNotesUpdate) {
+            callbacks.onNotesUpdate(notes);
+        }
+    });
+
+    // Tasks listener
+    const tasksRef = ref(db, `users/${userId}/tasks`);
+    onValue(tasksRef, (snapshot) => {
+        const tasks = snapshot.val() || [];
+        if (callbacks.onTasksUpdate) {
+            callbacks.onTasksUpdate(tasks);
+        }
+    });
+
+    // Performance listener
+    const performanceRef = ref(db, `users/${userId}/performance`);
+    onValue(performanceRef, (snapshot) => {
+        const performance = snapshot.val() || {};
+        if (callbacks.onPerformanceUpdate) {
+            callbacks.onPerformanceUpdate(performance);
+        }
+    });
+
+    // Watch History listener
+    const watchHistoryRef = ref(db, `users/${userId}/watchHistory`);
+    onValue(watchHistoryRef, (snapshot) => {
+        const watchHistory = snapshot.val() || [];
+        if (callbacks.onWatchHistoryUpdate) {
+            callbacks.onWatchHistoryUpdate(watchHistory);
+        }
+    });
 } 

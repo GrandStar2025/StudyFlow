@@ -262,7 +262,8 @@
             isVideoCompleted,
             addToWatchHistory,
             getLastSearch,
-            getWatchHistory
+            getWatchHistory,
+            setupRealtimeListeners
         } from './database.js';
 
         // Firebase configuration
@@ -294,6 +295,32 @@
                 currentUser = user;
                 // Initialize theme
                 await initTheme();
+                
+                // Setup real-time listeners
+                setupRealtimeListeners(currentUser.uid, {
+                    onNotesUpdate: (notes) => {
+                        const videoId = new URLSearchParams(window.location.search).get('id');
+                        if (notes[videoId]) {
+                            notes = notes[videoId];
+                            displayNotes();
+                        }
+                    },
+                    onTasksUpdate: (updatedTasks) => {
+                        tasks = updatedTasks;
+                        displayTasks();
+                    },
+                    onPerformanceUpdate: (performance) => {
+                        const today = new Date().toDateString();
+                        if (performance[today]) {
+                            studyTimeToday = performance[today].studyTime;
+                            document.getElementById('studyTimeToday').textContent = `${studyTimeToday} min`;
+                        }
+                    },
+                    onWatchHistoryUpdate: (watchHistory) => {
+                        displayWatchHistory();
+                    }
+                });
+
                 // We'll initialize the player when the API is ready
                 if (window.YT && window.YT.Player) {
                     await initializePlayer();
