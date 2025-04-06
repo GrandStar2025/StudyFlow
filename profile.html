@@ -3,25 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Profile - Study Flow</title>
+    <title>Study Flow - Profile</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        :root {
+            --profile-bg: #ffffff;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --text-muted: #6c757d;
+            --border-color: rgba(0,0,0,0.125);
+            --hover-bg: rgba(0,0,0,0.03);
+            --stat-card-bg: #f8f9fa;
+            --chart-grid: rgba(0,0,0,0.1);
+        }
+
+        [data-bs-theme="dark"] {
+            --profile-bg: #1a1d21;
+            --card-bg: #242830;
+            --text-color: #e9ecef;
+            --text-muted: #adb5bd;
+            --border-color: rgba(255,255,255,0.125);
+            --hover-bg: rgba(255,255,255,0.03);
+            --stat-card-bg: #2a2f38;
+            --chart-grid: rgba(255,255,255,0.1);
+        }
+
+        body {
+            background-color: var(--profile-bg);
+            color: var(--text-color);
+        }
+
         .profile-container {
-            max-width: 800px;
-            margin: 2rem auto;
+            max-width: 1200px;
+            margin: 0 auto;
             padding: 2rem;
-            background: var(--card-bg);
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(var(--primary-rgb), 0.1);
         }
 
         .profile-header {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 3rem;
         }
 
         .profile-picture {
@@ -34,127 +57,326 @@
         }
 
         .profile-name {
-            font-size: 1.75rem;
-            color: var(--text-color);
+            font-size: 2rem;
             margin-bottom: 0.5rem;
+            color: var(--text-color);
         }
 
         .profile-email {
             color: var(--text-muted);
-            margin-bottom: 2rem;
-        }
-
-        .profile-section {
-            margin-bottom: 2rem;
-        }
-
-        .profile-section-title {
-            font-size: 1.25rem;
-            color: var(--text-color);
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid rgba(var(--primary-rgb), 0.1);
         }
 
         .profile-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
         }
 
         .stat-card {
-            background: rgba(var(--primary-rgb), 0.05);
-            padding: 1.5rem;
+            background-color: var(--stat-card-bg);
             border-radius: 12px;
+            padding: 1.5rem;
             text-align: center;
-            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
         }
 
         .stat-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
         }
 
         .stat-value {
             font-size: 2rem;
-            font-weight: bold;
+            font-weight: 600;
             color: var(--primary-color);
             margin-bottom: 0.5rem;
         }
 
         .stat-label {
             color: var(--text-muted);
-            font-size: 0.9rem;
         }
 
-        .profile-actions {
+        .activity-section {
+            margin-bottom: 3rem;
+        }
+
+        .activity-section h3 {
+            margin-bottom: 1.5rem;
+            color: var(--text-color);
+        }
+
+        .activity-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .activity-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .activity-card h4 {
+            color: var(--text-color);
+            margin-bottom: 1rem;
+        }
+
+        .activity-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .activity-item {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-time {
+            font-size: 0.85rem;
+            color: var(--text-color);
+            opacity: 0.6;
+        }
+
+        .progress-section {
+            margin-bottom: 3rem;
+        }
+
+        .progress-section h3 {
+            margin-bottom: 1.5rem;
+            color: var(--text-color);
+        }
+
+        .progress-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .progress-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .progress-card h4 {
+            color: var(--text-color);
+            margin-bottom: 1rem;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background-color: var(--hover-bg);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            transition: width 0.3s ease;
+        }
+
+        .graph-section {
+            margin-bottom: 3rem;
+        }
+
+        .graph-section h3 {
+            margin-bottom: 1.5rem;
+            color: var(--text-color);
+        }
+
+        .graph-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .graph-wrapper {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        .graph-legend {
             display: flex;
-            gap: 1rem;
             justify-content: center;
-            margin-top: 2rem;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
         }
 
-        .btn-edit-profile {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        .graph-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .graph-btn {
+            padding: 0.5rem 1rem;
             border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            transition: transform 0.3s, box-shadow 0.3s;
+            border-radius: 6px;
+            background: var(--hover-bg);
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.3s;
         }
 
-        .btn-edit-profile:hover {
+        .graph-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .graph-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.2);
+        }
+
+        .graph-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary-color);
+            font-weight: 500;
+            animation: pulse 2s infinite;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .graph-tooltip {
+            background: var(--card-bg) !important;
+            border: 1px solid var(--border-color) !important;
+            border-radius: 8px !important;
+            padding: 8px 12px !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+        }
+
+        .graph-tooltip-title {
+            color: var(--text-color) !important;
+            font-weight: 600 !important;
+            margin-bottom: 4px !important;
+        }
+
+        .graph-tooltip-value {
+            color: var(--primary-color) !important;
+            font-weight: 500 !important;
+        }
+
+        .graph-zoom-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .zoom-btn {
+            padding: 0.25rem 0.5rem;
+            border: none;
+            border-radius: 4px;
+            background: var(--hover-bg);
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .zoom-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .graph-export {
+            margin-top: 1rem;
+            text-align: right;
+        }
+
+        .export-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            background: var(--hover-bg);
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .export-btn:hover {
+            background: var(--primary-color);
+            color: white;
         }
     </style>
 </head>
 <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg">
         <div class="container">
             <a class="navbar-brand" href="index.html">
-                <i class="bi bi-book-half"></i> Study Flow
+                <i class="bi bi-book-half me-2"></i>Study Flow
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.html">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="notes.html">Notes</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="tasks.html">Tasks</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="performance.html">Performance</a>
-                    </li>
-                </ul>
-                <div class="navbar-nav ms-auto">
-                    <div class="nav-item dropdown" id="profileDropdown">
-                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="background: rgba(255, 255, 255, 0.1); padding: 8px 16px; border-radius: 50px;">
-                            <img id="userProfilePic" src="https://via.placeholder.com/32" alt="Profile" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover; border: 2px solid var(--primary-color);">
-                            <span id="userName" class="d-none d-md-inline" style="color: var(--text-color); font-weight: 500;">Sign In</span>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" style="margin-top: 10px; border-radius: 12px; border: 1px solid rgba(var(--primary-rgb), 0.1); box-shadow: 0 4px 16px rgba(0,0,0,0.1);">
-                            <li><a class="dropdown-item py-2" href="profile.html"><i class="bi bi-person me-2"></i>My Profile</a></li>
-                            <li><a class="dropdown-item py-2" href="settings.html"><i class="bi bi-gear me-2"></i>Settings</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item py-2 text-danger" href="#" id="signOutButton"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
-                        </ul>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i class="bi bi-house-door"></i>
+                    Home
+                </a>
                     </div>
+            <div class="theme-switch-wrapper ms-auto">
+                <i class="bi bi-sun-fill theme-icon light-icon"></i>
+                <div class="form-check form-switch ms-2 me-2">
+                    <input class="form-check-input" type="checkbox" id="themeSwitch">
                 </div>
+                <i class="bi bi-moon-fill theme-icon dark-icon"></i>
             </div>
         </div>
     </nav>
 
-    <!-- Profile Content -->
-    <div class="container">
         <div class="profile-container">
             <div class="profile-header">
                 <img id="profilePicture" src="https://via.placeholder.com/150" alt="Profile Picture" class="profile-picture">
@@ -163,6 +385,10 @@
             </div>
 
             <div class="profile-stats">
+            <div class="stat-card">
+                <div class="stat-value" id="totalStudyTime">0</div>
+                <div class="stat-label">Total Study Hours</div>
+            </div>
                 <div class="stat-card">
                     <div class="stat-value" id="notesCount">0</div>
                     <div class="stat-label">Notes Created</div>
@@ -172,55 +398,117 @@
                     <div class="stat-label">Tasks Completed</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" id="studyHours">0</div>
-                    <div class="stat-label">Study Hours</div>
+                <div class="stat-value" id="videosWatched">0</div>
+                <div class="stat-label">Videos Watched</div>
+            </div>
+        </div>
+
+        <div class="graph-section">
+            <div class="graph-header">
+                <h3>Study Time Analysis</h3>
+                <div class="live-indicator">
+                    <div class="live-dot"></div>
+                    <span>Live Updates</span>
                 </div>
             </div>
-
-            <div class="profile-section">
-                <h2 class="profile-section-title">Recent Activity</h2>
-                <div class="list-group">
-                    <div class="list-group-item">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="mb-1">Created a new note</h6>
-                                <small class="text-muted">2 hours ago</small>
+            <div class="graph-controls">
+                <button class="graph-btn active" data-period="week">Weekly</button>
+                <button class="graph-btn" data-period="month">Monthly</button>
+                <button class="graph-btn" data-period="year">Yearly</button>
                             </div>
-                            <span class="badge bg-primary rounded-pill">Note</span>
+            <div class="graph-zoom-controls">
+                <button class="zoom-btn" data-action="zoom-in">+</button>
+                <button class="zoom-btn" data-action="zoom-out">-</button>
+                <button class="zoom-btn" data-action="reset">Reset</button>
                         </div>
-                    </div>
-                    <div class="list-group-item">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="mb-1">Completed a task</h6>
-                                <small class="text-muted">5 hours ago</small>
-                            </div>
-                            <span class="badge bg-success rounded-pill">Task</span>
-                        </div>
-                    </div>
+            <div class="graph-container">
+                <div class="graph-wrapper">
+                    <canvas id="studyTimeChart"></canvas>
                 </div>
             </div>
-
-            <div class="profile-actions">
-                <button class="btn btn-edit-profile">
-                    <i class="bi bi-pencil-square me-2"></i>Edit Profile
+            <div class="graph-export">
+                <button class="export-btn" id="exportStudyData">
+                    <i class="bi bi-download"></i>
+                    Export Data
                 </button>
+            </div>
+        </div>
+
+        <div class="graph-section">
+            <div class="graph-header">
+                <h3>Activity Distribution</h3>
+                <div class="live-indicator">
+                    <div class="live-dot"></div>
+                    <span>Live Updates</span>
+                </div>
+            </div>
+            <div class="graph-container">
+                <div class="graph-wrapper">
+                    <canvas id="activityChart"></canvas>
+                </div>
+            </div>
+            <div class="graph-legend" id="activityLegend"></div>
+        </div>
+
+        <div class="activity-section">
+            <h3>Recent Activity</h3>
+            <div class="activity-grid">
+                <div class="activity-card">
+                    <h4><i class="bi bi-journal-text me-2"></i>Recent Notes</h4>
+                    <ul class="activity-list" id="recentNotes">
+                        <!-- Recent notes will be displayed here -->
+                    </ul>
+                </div>
+                <div class="activity-card">
+                    <h4><i class="bi bi-check2-square me-2"></i>Recent Tasks</h4>
+                    <ul class="activity-list" id="recentTasks">
+                        <!-- Recent tasks will be displayed here -->
+                    </ul>
+                </div>
+                <div class="activity-card">
+                    <h4><i class="bi bi-clock-history me-2"></i>Recently Watched</h4>
+                    <ul class="activity-list" id="recentVideos">
+                        <!-- Recently watched videos will be displayed here -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="progress-section">
+            <h3>Study Progress</h3>
+            <div class="progress-grid">
+                <div class="progress-card">
+                    <h4>Daily Study Time</h4>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="dailyStudyProgress"></div>
+                    </div>
+                    <div class="stat-value" id="dailyStudyTime">0 min</div>
+                </div>
+                <div class="progress-card">
+                    <h4>Weekly Progress</h4>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="weeklyProgress"></div>
+                    </div>
+                    <div class="stat-value" id="weeklyStudyTime">0 hours</div>
+                </div>
+                <div class="progress-card">
+                    <h4>Monthly Goals</h4>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="monthlyProgress"></div>
+                    </div>
+                    <div class="stat-value" id="monthlyStudyTime">0 hours</div>
+                </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script type="module">
-        // Import Firebase modules
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-        import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js';
-        import { 
-            getAuth, 
-            signOut,
-            onAuthStateChanged 
-        } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getDatabase, ref, get, onValue } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js';
+        import { setupRealtimeListeners } from './database.js';
 
-        // Your web app's Firebase configuration
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyD33YiLLyTxlIycnHcArDKbgxvK_se27eA",
             authDomain: "studyflow-6ed25.firebaseapp.com",
@@ -234,55 +522,548 @@
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
         const auth = getAuth(app);
+        const db = getDatabase(app);
 
-        // Update UI based on auth state
-        onAuthStateChanged(auth, (user) => {
-            const profilePic = document.getElementById('userProfilePic');
-            const userName = document.getElementById('userName');
-            const profileDropdown = document.getElementById('profileDropdown');
-            const profilePicture = document.getElementById('profilePicture');
-            const profileName = document.getElementById('profileName');
-            const profileEmail = document.getElementById('profileEmail');
-            
+        // Check authentication state
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // User is signed in
-                const photoURL = user.photoURL || 'https://via.placeholder.com/150';
-                profilePic.src = photoURL;
-                profilePicture.src = photoURL;
-                userName.textContent = user.displayName || 'User';
-                profileName.textContent = user.displayName || 'User';
-                profileEmail.textContent = user.email || 'No email provided';
-                profileDropdown.classList.remove('d-none');
+                // Update profile info
+                document.getElementById('profilePicture').src = user.photoURL || 'https://via.placeholder.com/150';
+                document.getElementById('profileName').textContent = user.displayName || 'User';
+                document.getElementById('profileEmail').textContent = user.email;
+
+                // Setup real-time listeners
+                setupRealtimeListeners(user.uid, {
+                    onNotesUpdate: (notes) => {
+                        updateNotesStats(notes);
+                        updateRecentNotes(notes);
+                    },
+                    onTasksUpdate: (tasks) => {
+                        updateTasksStats(tasks);
+                        updateRecentTasks(tasks);
+                    },
+                    onPerformanceUpdate: (performance) => {
+                        updatePerformanceStats(performance);
+                    },
+                    onWatchHistoryUpdate: (watchHistory) => {
+                        updateWatchHistoryStats(watchHistory);
+                        updateRecentVideos(watchHistory);
+                    }
+                });
+
+                // Load initial data
+                await loadInitialData(user.uid);
             } else {
-                // User is signed out
                 window.location.href = 'signin.html';
             }
         });
 
-        // Sign out functionality
-        document.getElementById('signOutButton').addEventListener('click', async () => {
-            try {
-                await signOut(auth);
-                showNotification('Successfully signed out!', 'success');
-                window.location.href = 'index.html';
-            } catch (error) {
-                console.error('Error signing out:', error);
-                showNotification('Error signing out. Please try again.', 'error');
+        async function loadInitialData(userId) {
+            // Load all data initially
+            const notesRef = ref(db, `users/${userId}/notes`);
+            const tasksRef = ref(db, `users/${userId}/tasks`);
+            const performanceRef = ref(db, `users/${userId}/performance`);
+            const watchHistoryRef = ref(db, `users/${userId}/watchHistory`);
+
+            const [notesSnapshot, tasksSnapshot, performanceSnapshot, watchHistorySnapshot] = await Promise.all([
+                get(notesRef),
+                get(tasksRef),
+                get(performanceRef),
+                get(watchHistoryRef)
+            ]);
+
+            const notes = notesSnapshot.val() || {};
+            const tasks = tasksSnapshot.val() || [];
+            const performance = performanceSnapshot.val() || {};
+            const watchHistory = watchHistorySnapshot.val() || [];
+
+            updateNotesStats(notes);
+            updateTasksStats(tasks);
+            updatePerformanceStats(performance);
+            updateWatchHistoryStats(watchHistory);
+            updateRecentNotes(notes);
+            updateRecentTasks(tasks);
+            updateRecentVideos(watchHistory);
+        }
+
+        function updateNotesStats(notes) {
+            let totalNotes = 0;
+            Object.values(notes).forEach(videoNotes => {
+                totalNotes += videoNotes.length;
+            });
+            document.getElementById('notesCount').textContent = totalNotes;
+        }
+
+        function updateTasksStats(tasks) {
+            const completedTasks = tasks.filter(task => task.completed).length;
+            document.getElementById('tasksCount').textContent = completedTasks;
+        }
+
+        let studyTimeChart;
+        let activityChart;
+        let currentPeriod = 'week';
+
+        function updatePerformanceStats(performance) {
+            let totalStudyTime = 0;
+            let dailyStudyTime = 0;
+            const today = new Date().toDateString();
+            
+            Object.entries(performance).forEach(([date, data]) => {
+                totalStudyTime += data.studyTime || 0;
+                if (date === today) {
+                    dailyStudyTime = data.studyTime || 0;
+                }
+            });
+
+            document.getElementById('totalStudyTime').textContent = Math.round(totalStudyTime / 60);
+            document.getElementById('dailyStudyTime').textContent = `${dailyStudyTime} min`;
+            
+            // Update progress bars
+            const dailyProgress = Math.min((dailyStudyTime / 120) * 100, 100);
+            const weeklyProgress = Math.min((totalStudyTime / (60 * 14)) * 100, 100);
+            const monthlyProgress = Math.min((totalStudyTime / (60 * 60)) * 100, 100);
+
+            document.getElementById('dailyStudyProgress').style.width = `${dailyProgress}%`;
+            document.getElementById('weeklyProgress').style.width = `${weeklyProgress}%`;
+            document.getElementById('monthlyProgress').style.width = `${monthlyProgress}%`;
+
+            // Update charts
+            updateStudyTimeChart(performance);
+            updateActivityChart(performance);
+        }
+
+        function updateStudyTimeChart(performance) {
+            const ctx = document.getElementById('studyTimeChart').getContext('2d');
+            const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+            
+            // Prepare data based on selected period
+            let labels = [];
+            let data = [];
+            const now = new Date();
+            
+            if (currentPeriod === 'week') {
+                // Last 7 days
+                for (let i = 6; i >= 0; i--) {
+                    const date = new Date(now);
+                    date.setDate(date.getDate() - i);
+                    const dateStr = date.toDateString();
+                    labels.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+                    data.push((performance[dateStr]?.studyTime || 0) / 60); // Convert to hours
+                }
+            } else if (currentPeriod === 'month') {
+                // Last 30 days
+                for (let i = 29; i >= 0; i--) {
+                    const date = new Date(now);
+                    date.setDate(date.getDate() - i);
+                    const dateStr = date.toDateString();
+                    labels.push(date.toLocaleDateString('en-US', { day: 'numeric' }));
+                    data.push((performance[dateStr]?.studyTime || 0) / 60);
+                }
+            } else {
+                // Last 12 months
+                for (let i = 11; i >= 0; i--) {
+                    const date = new Date(now);
+                    date.setMonth(date.getMonth() - i);
+                    const monthStr = date.toLocaleDateString('en-US', { month: 'short' });
+                    labels.push(monthStr);
+                    
+                    // Sum all days in the month
+                    let monthTotal = 0;
+                    const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+                    for (let day = 1; day <= daysInMonth; day++) {
+                        const dayDate = new Date(date.getFullYear(), date.getMonth(), day);
+                        const dayStr = dayDate.toDateString();
+                        monthTotal += (performance[dayStr]?.studyTime || 0) / 60;
+                    }
+                    data.push(monthTotal);
+                }
             }
+
+            if (studyTimeChart) {
+                studyTimeChart.destroy();
+            }
+
+            studyTimeChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Study Time (hours)',
+                        data: data,
+                        borderColor: isDark ? '#818cf8' : '#4f46e5',
+                        backgroundColor: isDark ? 'rgba(129, 140, 248, 0.2)' : 'rgba(79, 70, 229, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointBackgroundColor: isDark ? '#818cf8' : '#4f46e5',
+                        pointBorderColor: isDark ? '#1a1d21' : 'white',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                color: isDark ? '#e9ecef' : '#2c3e50',
+                                font: {
+                                    size: 14,
+                                    weight: '600'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: isDark ? '#374151' : 'white',
+                            titleColor: isDark ? '#ffffff' : '#2c3e50',
+                            bodyColor: isDark ? '#ffffff' : '#2c3e50',
+                            borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
+                            borderWidth: 1,
+                            padding: 12,
+                            displayColors: false,
+                            titleFont: {
+                                size: 14,
+                                weight: '600'
+                            },
+                            bodyFont: {
+                                size: 13,
+                                weight: '500'
+                            },
+                            callbacks: {
+                                label: function(context) {
+                                    return `Study Time: ${context.parsed.y.toFixed(1)} hours`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                                drawBorder: false,
+                                lineWidth: 1
+                            },
+                            ticks: {
+                                color: isDark ? '#e9ecef' : '#2c3e50',
+                                font: {
+                                    size: 12,
+                                    weight: '600'
+                                },
+                                padding: 8,
+                                callback: function(value) {
+                                    return value + ' hrs';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                                drawBorder: false,
+                                lineWidth: 1
+                            },
+                            ticks: {
+                                color: isDark ? '#e9ecef' : '#2c3e50',
+                                font: {
+                                    size: 12,
+                                    weight: '600'
+                                },
+                                padding: 8
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Add zoom controls
+            document.querySelectorAll('.zoom-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const action = btn.dataset.action;
+                    if (action === 'zoom-in') {
+                        studyTimeChart.zoom(1.1);
+                    } else if (action === 'zoom-out') {
+                        studyTimeChart.zoom(0.9);
+                    } else if (action === 'reset') {
+                        studyTimeChart.resetZoom();
+                    }
+                });
+            });
+        }
+
+        function updateActivityChart(performance) {
+            const ctx = document.getElementById('activityChart').getContext('2d');
+            const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+            
+            // Calculate activity distribution
+            const activityData = {
+                notes: 0,
+                tasks: 0,
+                videos: 0
+            };
+
+            // Count activities
+            Object.values(performance).forEach(data => {
+                activityData.notes += data.notesCount || 0;
+                activityData.tasks += data.tasksCount || 0;
+                activityData.videos += data.videosWatched || 0;
+            });
+
+            if (activityChart) {
+                activityChart.destroy();
+            }
+
+            activityChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Notes', 'Tasks', 'Videos'],
+                    datasets: [{
+                        data: [activityData.notes, activityData.tasks, activityData.videos],
+                        backgroundColor: [
+                            isDark ? '#818cf8' : '#4f46e5',
+                            isDark ? '#ec4899' : '#db2777',
+                            isDark ? '#34d399' : '#10b981'
+                        ],
+                        borderColor: isDark ? '#1a1d21' : 'white',
+                        borderWidth: 2,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                color: isDark ? '#e9ecef' : '#2c3e50',
+                                font: {
+                                    size: 14,
+                                    weight: '600'
+                                },
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: isDark ? '#374151' : 'white',
+                            titleColor: isDark ? '#ffffff' : '#2c3e50',
+                            bodyColor: isDark ? '#ffffff' : '#2c3e50',
+                            borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
+                            borderWidth: 1,
+                            padding: 12,
+                            titleFont: {
+                                size: 14,
+                                weight: '600'
+                            },
+                            bodyFont: {
+                                size: 13,
+                                weight: '500'
+                            },
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                    return `${context.label}: ${context.parsed} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Update legend
+            const legendContainer = document.getElementById('activityLegend');
+            legendContainer.innerHTML = activityChart.data.labels.map((label, i) => `
+                <div class="legend-item" data-index="${i}">
+                    <div class="legend-color" style="background-color: ${activityChart.data.datasets[0].backgroundColor[i]}"></div>
+                    <span>${label}</span>
+                </div>
+            `).join('');
+
+            // Add legend click handlers
+            document.querySelectorAll('.legend-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const index = parseInt(item.dataset.index);
+                    const meta = activityChart.getDatasetMeta(0);
+                    meta.data[index].hidden = !meta.data[index].hidden;
+                    activityChart.update();
+                    item.classList.toggle('active');
+                });
+            });
+        }
+
+        // Add event listeners for graph period buttons
+        document.querySelectorAll('.graph-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.graph-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentPeriod = btn.dataset.period;
+                updateStudyTimeChart(window.currentPerformance || {});
+            });
         });
 
-        // Show notification function
-        function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
+        function updateWatchHistoryStats(watchHistory) {
+            document.getElementById('videosWatched').textContent = watchHistory.length;
+        }
 
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
+        function updateRecentNotes(notes) {
+            const recentNotesList = document.getElementById('recentNotes');
+            let allNotes = [];
+            
+            Object.entries(notes).forEach(([videoId, videoNotes]) => {
+                videoNotes.forEach(note => {
+                    allNotes.push({
+                        ...note,
+                        videoId
+                    });
+                });
+            });
+
+            // Sort by timestamp and get last 5
+            allNotes.sort((a, b) => b.id - a.id);
+            const recentNotes = allNotes.slice(0, 5);
+
+            recentNotesList.innerHTML = recentNotes.map(note => `
+                <li class="activity-item">
+                    <div>${note.text}</div>
+                    <small class="activity-time">${new Date(note.id).toLocaleString()}</small>
+                </li>
+            `).join('');
+        }
+
+        function updateRecentTasks(tasks) {
+            const recentTasksList = document.getElementById('recentTasks');
+            const recentTasks = tasks
+                .sort((a, b) => b.id - a.id)
+                .slice(0, 5);
+
+            recentTasksList.innerHTML = recentTasks.map(task => `
+                <li class="activity-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>${task.text}</span>
+                        <span class="badge ${task.completed ? 'bg-success' : 'bg-warning'}">
+                            ${task.completed ? 'Completed' : 'Pending'}
+                        </span>
+                    </div>
+                    <small class="activity-time">${new Date(task.id).toLocaleString()}</small>
+                </li>
+            `).join('');
+        }
+
+        function updateRecentVideos(watchHistory) {
+            const recentVideosList = document.getElementById('recentVideos');
+            const recentVideos = watchHistory.slice(0, 5);
+
+            recentVideosList.innerHTML = recentVideos.map(video => `
+                <li class="activity-item">
+                    <div>${video.snippet.title}</div>
+                    <small class="activity-time">${new Date(video.watchedAt).toLocaleString()}</small>
+                </li>
+            `).join('');
+        }
+
+        // Add export functionality
+        document.getElementById('exportStudyData').addEventListener('click', () => {
+            const data = {
+                labels: studyTimeChart.data.labels,
+                studyTime: studyTimeChart.data.datasets[0].data
+            };
+            
+            const csv = [
+                ['Date', 'Study Time (hours)'],
+                ...data.labels.map((label, i) => [label, data.studyTime[i]])
+            ].map(row => row.join(',')).join('\n');
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `study_time_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="themeManager.js"></script>
+    <script>
+        // Theme switching functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeSwitch = document.getElementById('themeSwitch');
+            const htmlElement = document.documentElement;
+            
+            // Check saved theme preference
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                htmlElement.setAttribute('data-bs-theme', savedTheme);
+                themeSwitch.checked = savedTheme === 'dark';
+            }
+
+            // Theme switch handler
+            themeSwitch.addEventListener('change', () => {
+                const theme = themeSwitch.checked ? 'dark' : 'light';
+                htmlElement.setAttribute('data-bs-theme', theme);
+                localStorage.setItem('theme', theme);
+                
+                // Update chart colors if charts exist
+                if (window.studyTimeChart) {
+                    updateChartColors(window.studyTimeChart);
+                }
+                if (window.activityChart) {
+                    updateChartColors(window.activityChart);
+                }
+            });
+        });
+
+        // Function to update chart colors based on theme
+        function updateChartColors(chart) {
+            const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+            
+            if (chart.config.type === 'line') {
+                // Update line chart colors
+                chart.data.datasets[0].borderColor = isDark ? '#818cf8' : '#4f46e5';
+                chart.data.datasets[0].backgroundColor = isDark ? 'rgba(129, 140, 248, 0.2)' : 'rgba(79, 70, 229, 0.1)';
+                chart.data.datasets[0].pointBackgroundColor = isDark ? '#818cf8' : '#4f46e5';
+                chart.data.datasets[0].pointBorderColor = isDark ? '#1a1d21' : 'white';
+            } else if (chart.config.type === 'doughnut') {
+                // Update doughnut chart colors
+                chart.data.datasets[0].backgroundColor = [
+                    isDark ? '#818cf8' : '#4f46e5',
+                    isDark ? '#ec4899' : '#db2777',
+                    isDark ? '#34d399' : '#10b981'
+                ];
+                chart.data.datasets[0].borderColor = isDark ? '#1a1d21' : 'white';
+            }
+            
+            // Update common elements
+            if (chart.options.scales) {
+                chart.options.scales.x.grid.color = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+                chart.options.scales.y.grid.color = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+                chart.options.scales.x.ticks.color = isDark ? '#e9ecef' : '#2c3e50';
+                chart.options.scales.y.ticks.color = isDark ? '#e9ecef' : '#2c3e50';
+            }
+            
+            // Update tooltips
+            chart.options.plugins.tooltip.backgroundColor = isDark ? '#374151' : 'white';
+            chart.options.plugins.tooltip.titleColor = isDark ? '#ffffff' : '#2c3e50';
+            chart.options.plugins.tooltip.bodyColor = isDark ? '#ffffff' : '#2c3e50';
+            chart.options.plugins.tooltip.borderColor = isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)';
+            
+            // Update legend
+            if (chart.options.plugins.legend) {
+                chart.options.plugins.legend.labels.color = isDark ? '#e9ecef' : '#2c3e50';
+            }
+            
+            chart.update();
         }
     </script>
 </body>
