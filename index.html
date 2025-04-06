@@ -30,7 +30,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="community.html">
+                        <a class="nav-link" href="#" id="communityLink">
                             <i class="bi bi-people-fill me-1"></i>Community
                         </a>
                     </li>
@@ -167,6 +167,95 @@
             prompt: 'select_account'
         });
 
+        // Show notification function
+        window.showNotification = function(message, type = 'info', showSignInButton = false) {
+            // Remove any existing notifications first
+            const existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(notification => notification.remove());
+
+            // Create notification container
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            
+            // Add icon based on type
+            const icon = document.createElement('div');
+            icon.className = 'notification-icon';
+            if (type === 'warning') {
+                icon.innerHTML = '<i class="bi bi-shield-lock-fill"></i>';
+            } else if (type === 'success') {
+                icon.innerHTML = '<i class="bi bi-check-circle-fill"></i>';
+            } else if (type === 'error') {
+                icon.innerHTML = '<i class="bi bi-x-circle-fill"></i>';
+            }
+            notification.appendChild(icon);
+            
+            // Create message element
+            const messageElement = document.createElement('div');
+            messageElement.className = 'notification-message';
+            messageElement.textContent = message;
+            notification.appendChild(messageElement);
+
+            // Add buttons if needed
+            if (showSignInButton) {
+                const buttonsContainer = document.createElement('div');
+                buttonsContainer.className = 'notification-buttons';
+                
+                // Sign In button
+                const signInButton = document.createElement('button');
+                signInButton.className = 'btn btn-primary';
+                signInButton.innerHTML = '<i class="bi bi-google me-2"></i>Sign In with Google';
+                signInButton.onclick = () => {
+                    signInWithGoogle();
+                    notification.remove();
+                };
+                
+                // Close button
+                const closeButton = document.createElement('button');
+                closeButton.className = 'btn btn-outline';
+                closeButton.innerHTML = '<i class="bi bi-x-lg me-2"></i>Close';
+                closeButton.onclick = () => {
+                    notification.style.opacity = '0';
+                    setTimeout(() => notification.remove(), 300);
+                };
+                
+                buttonsContainer.appendChild(signInButton);
+                buttonsContainer.appendChild(closeButton);
+                notification.appendChild(buttonsContainer);
+            } else {
+                // Add close button for regular notifications
+                const closeButton = document.createElement('button');
+                closeButton.className = 'btn btn-outline';
+                closeButton.innerHTML = '<i class="bi bi-x-lg me-2"></i>Close';
+                closeButton.onclick = () => {
+                    notification.style.opacity = '0';
+                    setTimeout(() => notification.remove(), 300);
+                };
+                notification.appendChild(closeButton);
+            }
+            
+            // Add to body
+            document.body.appendChild(notification);
+
+            // Auto remove after 5 seconds if no buttons
+            if (!showSignInButton) {
+                setTimeout(() => {
+                    notification.style.opacity = '0';
+                    setTimeout(() => notification.remove(), 300);
+                }, 5000);
+            }
+        }
+
+        // Community link click handler
+        document.getElementById('communityLink').addEventListener('click', (e) => {
+            if (!auth.currentUser) {
+                e.preventDefault();
+                showNotification('Please sign in to access the community features!', 'warning', true);
+            } else {
+                // No notification, just redirect
+                window.location.href = 'community.html';
+            }
+        });
+
         // Update UI based on auth state
         onAuthStateChanged(auth, async (user) => {
             const profilePic = document.getElementById('userProfilePic');
@@ -184,16 +273,12 @@
                 authButtons.style.display = 'none';
                 
                 // Store user info
-                currentUser = user;
-                
-                // Load user data
-                await loadLastSearch();
-                await displayWatchHistory();
+                window.currentUser = user;
             } else {
                 // Hide profile dropdown, show auth buttons
                 profileDropdown.style.display = 'none';
                 authButtons.style.display = 'block';
-                currentUser = null;
+                window.currentUser = null;
             }
         });
 
@@ -208,18 +293,6 @@
                 showNotification('Error signing out. Please try again.', 'error');
             }
         });
-
-        // Show notification function
-        function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
-        }
 
         // Google Sign In function
         window.signInWithGoogle = async function() {

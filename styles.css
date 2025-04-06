@@ -931,7 +931,7 @@ body {
 }
 
 .dropdown-menu {
-    background: rgba(var(--card-bg), 0.9) !important;
+    background: rgba(255, 255, 255, 0.9) !important;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(var(--primary-rgb), 0.1);
     box-shadow: 0 4px 16px rgba(0,0,0,0.1);
@@ -995,48 +995,125 @@ body {
 /* Notification Styles */
 .notification {
     position: fixed;
-    bottom: 20px;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
-    padding: 12px 24px;
-    border-radius: 8px;
-    color: white;
+    transform: translate(-50%, -50%);
+    padding: 30px;
+    border-radius: 20px;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease-out;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    min-width: 400px;
+    text-align: center;
+    font-size: 16px;
     font-weight: 500;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    z-index: 9999;
-    animation: slideUp 0.3s ease, fadeOut 0.3s ease 2.7s;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.notification.warning {
+    background: linear-gradient(135deg, rgba(255, 171, 0, 0.95), rgba(255, 193, 7, 0.85));
+    color: #000;
+    border: 1px solid rgba(255, 193, 7, 0.5);
+    box-shadow: 0 15px 35px rgba(255, 171, 0, 0.2);
 }
 
 .notification.success {
-    background: var(--success-color);
+    background: linear-gradient(135deg, rgba(0, 200, 83, 0.95), rgba(0, 230, 118, 0.85));
+    color: #fff;
+    border: 1px solid rgba(0, 230, 118, 0.5);
+    box-shadow: 0 15px 35px rgba(0, 200, 83, 0.2);
 }
 
 .notification.error {
-    background: var(--danger-color);
+    background: linear-gradient(135deg, rgba(255, 82, 82, 0.95), rgba(255, 23, 68, 0.85));
+    color: #fff;
+    border: 1px solid rgba(255, 23, 68, 0.5);
+    box-shadow: 0 15px 35px rgba(255, 82, 82, 0.2);
 }
 
-.notification.info {
-    background: var(--primary-color);
+.notification .notification-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+    color: inherit;
 }
 
-@keyframes slideUp {
+.notification .notification-message {
+    font-size: 20px;
+    line-height: 1.5;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.notification .notification-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.notification .btn {
+    padding: 14px 30px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.notification .btn-primary {
+    background: linear-gradient(135deg, #00b4d8, #0096c7);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 180, 216, 0.3);
+}
+
+.notification .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 180, 216, 0.4);
+    background: linear-gradient(135deg, #0096c7, #00b4d8);
+}
+
+.notification .btn-outline {
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid currentColor;
+    color: inherit;
+    font-weight: 600;
+    backdrop-filter: blur(5px);
+}
+
+.notification .btn-outline:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+}
+
+@keyframes fadeIn {
     from {
-        transform: translate(-50%, 100%);
         opacity: 0;
+        transform: translate(-50%, -40%);
     }
     to {
-        transform: translate(-50%, 0);
         opacity: 1;
+        transform: translate(-50%, -50%);
     }
 }
 
-@keyframes fadeOut {
-    from {
-        opacity: 1;
-    }
-    to {
-        opacity: 0;
-    }
+/* Add a semi-transparent overlay behind the notification */
+.notification::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: -1;
+    backdrop-filter: blur(5px);
 }
 
 #profileDropdown {
@@ -1125,42 +1202,6 @@ body {
 .form-select option {
     background-color: var(--card-bg);
     color: var(--text-color);
-}
-
-/* Notification Styles */
-.notification {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    padding: 12px 24px;
-    border-radius: 8px;
-    color: white;
-    font-weight: 500;
-    z-index: 1000;
-    animation: slideIn 0.3s ease-out;
-}
-
-.notification.success {
-    background: linear-gradient(135deg, #4CAF50, #45a049);
-}
-
-.notification.error {
-    background: linear-gradient(135deg, #f44336, #d32f2f);
-}
-
-.notification.info {
-    background: linear-gradient(135deg, #2196F3, #1976D2);
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
 }
 
 /* Color Picker Styles */
