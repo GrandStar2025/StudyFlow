@@ -399,6 +399,35 @@
         [data-bs-theme="light"] #tasksList::-webkit-scrollbar-track {
             background: #f0f0f0;
         }
+
+        /* Add styles for date display */
+        .note-date {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .task-date {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .task-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        [data-bs-theme="light"] .note-date,
+        [data-bs-theme="light"] .task-date {
+            color: #666666;
+        }
+
+        [data-bs-theme="dark"] .note-date,
+        [data-bs-theme="dark"] .task-date {
+            color: #aaaaaa;
+        }
     </style>
 </head>
 <body>
@@ -599,6 +628,11 @@
         function onPlayerReady(event) {
             console.log('Player ready');
             document.getElementById('player').classList.add('loaded');
+            
+            // Start progress tracking immediately
+            startProgressTracking();
+            
+            // Load saved progress
             loadSavedProgress();
         }
 
@@ -607,16 +641,30 @@
             if (!currentUser || !window.player) return;
 
             const videoId = getVideoId();
+            if (!videoId) return;
+            
             try {
                 const progress = await getVideoProgress(currentUser.uid, videoId);
                 if (progress && progress.currentTime) {
-                    window.player.seekTo(progress.currentTime, true);
-                    window.player.playVideo();
-                    
-                    // Update progress bar
-                    const progressPercent = (progress.currentTime / progress.duration) * 100;
-                    document.getElementById('videoProgress').style.width = `${progressPercent}%`;
-                    document.getElementById('videoProgressText').textContent = `${Math.round(progressPercent)}%`;
+                    // Make sure player is ready before seeking
+                    if (window.player.seekTo) {
+                        window.player.seekTo(progress.currentTime, true);
+                        window.player.playVideo();
+                        
+                        // Update progress bar
+                        const progressPercent = (progress.currentTime / progress.duration) * 100;
+                        const progressBar = document.getElementById('videoProgress');
+                        const progressText = document.getElementById('videoProgressText');
+                        
+                        if (progressBar && progressText) {
+                            progressBar.style.width = `${progressPercent}%`;
+                            progressText.textContent = `${Math.round(progressPercent)}%`;
+                        }
+                    } else {
+                        console.log('Player not ready for seeking, will try again later');
+                        // Try again after a short delay
+                        setTimeout(loadSavedProgress, 1000);
+                    }
                 }
             } catch (error) {
                 console.error('Error loading saved progress:', error);
@@ -758,22 +806,41 @@
         }
 
         async function updateProgress() {
-            if (player && player.getCurrentTime && player.getDuration) {
-                const currentTime = player.getCurrentTime();
-                const duration = player.getDuration();
-                const progress = (currentTime / duration) * 100;
-                
-                document.getElementById('videoProgress').style.width = `${progress}%`;
-                document.getElementById('videoProgressText').textContent = `${Math.round(progress)}%`;
-
-                // Save progress
-                const videoId = getVideoId();
-                const progressData = {
-                    currentTime: currentTime,
-                    duration: duration,
-                    progress: progress
-                };
-                await saveVideoProgress(currentUser.uid, videoId, progressData);
+            if (window.player && window.player.getCurrentTime && window.player.getDuration) {
+                try {
+                    const currentTime = window.player.getCurrentTime();
+                    const duration = window.player.getDuration();
+                    
+                    if (isNaN(currentTime) || isNaN(duration) || duration === 0) {
+                        console.log('Invalid player state, skipping progress update');
+                        return;
+                    }
+                    
+                    const progress = (currentTime / duration) * 100;
+                    
+                    // Update progress bar
+                    const progressBar = document.getElementById('videoProgress');
+                    const progressText = document.getElementById('videoProgressText');
+                    
+                    if (progressBar && progressText) {
+                        progressBar.style.width = `${progress}%`;
+                        progressText.textContent = `${Math.round(progress)}%`;
+                        
+                        // Save progress to Firebase
+                        const videoId = getVideoId();
+                        if (videoId && currentUser) {
+                            const progressData = {
+                                currentTime: currentTime,
+                                duration: duration,
+                                progress: progress,
+                                lastUpdated: new Date().toISOString()
+                            };
+                            await saveVideoProgress(currentUser.uid, videoId, progressData);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error updating progress:', error);
+                }
             }
         }
 
@@ -785,13 +852,15 @@
             try {
                 const timestamp = window.player.getCurrentTime();
                 const videoId = getVideoId();
+                const now = new Date();
                 
                 const note = {
                     id: Date.now().toString(),
                     text: noteText,
                     timestamp: timestamp,
                     formattedTime: formatTime(timestamp),
-                    createdAt: new Date().toISOString()
+                    createdAt: now.toISOString(),
+                    formattedDate: formatDateAndTime(now)
                 };
                 
                 // Initialize notes array if undefined
@@ -843,11 +912,12 @@
                         </audio>
                     `;
                 }
-
+                
                 if (editingNoteId === note.id) {
                     // Show edit form
                     noteElement.innerHTML = `
                         <div class="note-timestamp">${note.formattedTime}</div>
+                        <div class="note-date">${note.formattedDate || formatDateAndTime(new Date(note.createdAt))}</div>
                         <div class="edit-note-form">
                             <textarea class="form-control mb-2" id="editNoteText">${note.text}</textarea>
                             <div class="d-flex gap-2">
@@ -866,6 +936,7 @@
                         <div class="note-timestamp" onclick="seekToTimestamp(${note.timestamp})">
                             ${note.formattedTime}
                         </div>
+                        <div class="note-date">${note.formattedDate || formatDateAndTime(new Date(note.createdAt))}</div>
                         <div class="note-text">${note.text}</div>
                         ${audioPlayer}
                         <div class="note-actions d-flex gap-2 mt-2">
@@ -896,7 +967,7 @@
                 await saveNotes(currentUser.uid, videoId, notes);
                 
                 // Update display
-        displayNotes();
+                displayNotes();
                 
                 // Update notes count
                 document.getElementById('notesCount').textContent = notes.length.toString();
@@ -910,11 +981,14 @@
 
         // Tasks functionality
         async function addTask(text) {
+            const now = new Date();
             const task = {
                 id: Date.now(),
                 text: text,
                 completed: false,
-                date: new Date().toDateString()
+                date: now.toDateString(),
+                createdAt: now.toISOString(),
+                formattedDate: formatDateAndTime(now)
             };
             
             tasks.push(task);
@@ -950,7 +1024,10 @@
                     <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask(${task.id})">
                         ${task.completed ? '<i class="bi bi-check"></i>' : ''}
                     </div>
-                    <div class="task-text ${task.completed ? 'completed' : ''}">${task.text}</div>
+                    <div class="task-content">
+                        <div class="task-text ${task.completed ? 'completed' : ''}">${task.text}</div>
+                        <div class="task-date">${task.formattedDate || formatDateAndTime(new Date(task.createdAt))}</div>
+                    </div>
                     <i class="bi bi-trash task-delete" onclick="deleteTask(${task.id})"></i>
                 `;
                 tasksList.appendChild(taskElement);
@@ -1027,6 +1104,18 @@
             const minutes = Math.floor(seconds / 60);
             seconds = Math.floor(seconds % 60);
             return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Add a helper function to format date and time
+        function formatDateAndTime(date) {
+            const options = { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            return date.toLocaleString(undefined, options);
         }
 
         // Make functions globally available
@@ -1202,15 +1291,15 @@
             const taskInput = document.getElementById('taskInput');
             
             if (recordBtn) {
-                recordBtn.addEventListener('click', () => {
-                    if (!isRecording) {
-                        startRecording();
-                    }
-                });
+        recordBtn.addEventListener('click', () => {
+            if (!isRecording) {
+                startRecording();
+            }
+        });
             }
 
             if (stopBtn) {
-                stopBtn.addEventListener('click', stopRecording);
+        stopBtn.addEventListener('click', stopRecording);
             }
 
             // Add note button click handler
@@ -1223,9 +1312,9 @@
                 noteInput.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
-                        addNote();
-                    }
-                });
+                addNote();
+            }
+        });
             }
 
             // Add task button click handler
@@ -1241,14 +1330,14 @@
             // Add task on Enter key press
             if (taskInput) {
                 taskInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
+            if (e.key === 'Enter') {
                         e.preventDefault();
                         const taskText = taskInput.value.trim();
                         if (taskText) {
                             addTask(taskText);
-                        }
-                    }
-                });
+                }
+            }
+        });
             }
         });
 
