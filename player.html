@@ -428,6 +428,54 @@
         [data-bs-theme="dark"] .task-date {
             color: #aaaaaa;
         }
+
+        /* Add styles for horizontal timeline layout */
+        .note-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+        }
+
+        .note-timestamp {
+            font-size: 0.9rem;
+            color: var(--primary-color);
+            font-weight: 500;
+            cursor: pointer;
+            padding: 2px 8px;
+            background-color: rgba(var(--primary-rgb), 0.1);
+            border-radius: 4px;
+        }
+
+        .note-date {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .note-item {
+            position: relative;
+            padding-left: 15px;
+        }
+
+        .note-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background-color: var(--primary-color);
+            border-radius: 3px;
+        }
+
+        [data-bs-theme="light"] .note-timestamp {
+            background-color: rgba(var(--primary-rgb), 0.1);
+        }
+
+        [data-bs-theme="dark"] .note-timestamp {
+            background-color: rgba(var(--primary-rgb), 0.2);
+        }
     </style>
 </head>
 <body>
@@ -816,8 +864,8 @@
                         return;
                     }
                     
-                    const progress = (currentTime / duration) * 100;
-                    
+                const progress = (currentTime / duration) * 100;
+                
                     // Update progress bar
                     const progressBar = document.getElementById('videoProgress');
                     const progressText = document.getElementById('videoProgressText');
@@ -829,15 +877,15 @@
                         // Save progress to Firebase
                         const videoId = getVideoId();
                         if (videoId && currentUser) {
-                            const progressData = {
-                                currentTime: currentTime,
-                                duration: duration,
+                const progressData = {
+                    currentTime: currentTime,
+                    duration: duration,
                                 progress: progress,
                                 lastUpdated: new Date().toISOString()
-                            };
-                            await saveVideoProgress(currentUser.uid, videoId, progressData);
-                        }
-                    }
+                };
+                await saveVideoProgress(currentUser.uid, videoId, progressData);
+            }
+        }
                 } catch (error) {
                     console.error('Error updating progress:', error);
                 }
@@ -915,9 +963,15 @@
                 
                 if (editingNoteId === note.id) {
                     // Show edit form
-                    noteElement.innerHTML = `
-                        <div class="note-timestamp">${note.formattedTime}</div>
-                        <div class="note-date">${note.formattedDate || formatDateAndTime(new Date(note.createdAt))}</div>
+                noteElement.innerHTML = `
+                        <div class="note-header d-flex align-items-center">
+                            <div class="note-timestamp" onclick="seekToTimestamp(${note.timestamp})">
+                        ${note.formattedTime}
+                            </div>
+                            <div class="note-date ms-2">
+                                ${note.formattedDate || formatDateAndTime(new Date(note.createdAt))}
+                            </div>
+                        </div>
                         <div class="edit-note-form">
                             <textarea class="form-control mb-2" id="editNoteText">${note.text}</textarea>
                             <div class="d-flex gap-2">
@@ -933,12 +987,16 @@
                 } else {
                     // Show normal note view
                     noteElement.innerHTML = `
-                        <div class="note-timestamp" onclick="seekToTimestamp(${note.timestamp})">
-                            ${note.formattedTime}
-                        </div>
-                        <div class="note-date">${note.formattedDate || formatDateAndTime(new Date(note.createdAt))}</div>
-                        <div class="note-text">${note.text}</div>
-                        ${audioPlayer}
+                        <div class="note-header d-flex align-items-center">
+                            <div class="note-timestamp" onclick="seekToTimestamp(${note.timestamp})">
+                                ${note.formattedTime}
+                            </div>
+                            <div class="note-date ms-2">
+                                ${note.formattedDate || formatDateAndTime(new Date(note.createdAt))}
+                            </div>
+                    </div>
+                    <div class="note-text">${note.text}</div>
+                    ${audioPlayer}
                         <div class="note-actions d-flex gap-2 mt-2">
                             <button class="btn btn-sm btn-primary" onclick="seekToTimestamp(${note.timestamp})">
                                 <i class="bi bi-play-fill"></i> Go to timestamp
@@ -967,7 +1025,7 @@
                 await saveNotes(currentUser.uid, videoId, notes);
                 
                 // Update display
-                displayNotes();
+        displayNotes();
                 
                 // Update notes count
                 document.getElementById('notesCount').textContent = notes.length.toString();
@@ -1025,7 +1083,7 @@
                         ${task.completed ? '<i class="bi bi-check"></i>' : ''}
                     </div>
                     <div class="task-content">
-                        <div class="task-text ${task.completed ? 'completed' : ''}">${task.text}</div>
+                    <div class="task-text ${task.completed ? 'completed' : ''}">${task.text}</div>
                         <div class="task-date">${task.formattedDate || formatDateAndTime(new Date(task.createdAt))}</div>
                     </div>
                     <i class="bi bi-trash task-delete" onclick="deleteTask(${task.id})"></i>
