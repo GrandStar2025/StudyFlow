@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Flow - Playlist</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .playlist-header {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .playlist-thumbnail {
+            width: 100%;
+            max-width: 320px;
+            aspect-ratio: 16/9;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .playlist-info {
+            padding: 20px;
+        }
+
+        .playlist-stats {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin: 10px 0;
+        }
+
+        .playlist-description {
+            margin-top: 10px;
+            color: var(--text-color);
+        }
+
+        .video-item {
+            display: flex;
+            padding: 10px;
+            margin-bottom: 10px;
+            background: var(--card-bg);
+            border-radius: 8px;
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+
+        .video-item:hover {
+            transform: translateX(5px);
+            background: var(--hover-bg);
+        }
+
+        .video-thumbnail {
+            width: 160px;
+            aspect-ratio: 16/9;
+            border-radius: 4px;
+            object-fit: cover;
+        }
+
+        .video-details {
+            flex: 1;
+            padding: 0 15px;
+        }
+
+        .video-title {
+            font-size: 1rem;
+            margin-bottom: 5px;
+            color: var(--text-color);
+        }
+
+        .video-channel {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .video-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .drag-handle {
+            cursor: move;
+            color: var(--text-muted);
+            padding: 10px;
+        }
+
+        .drag-handle:hover {
+            color: var(--text-color);
+        }
+
+        .video-item.dragging {
+            opacity: 0.5;
+        }
+
+        .video-item.drag-over {
+            border: 2px dashed var(--primary-color);
+        }
+
+        .empty-playlist {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="bi bi-book-half me-2"></i>Study Flow
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i class="bi bi-house-door"></i>
+                    Home
+                </a>
+                <a href="playlists.html" class="nav-link">
+                    <i class="bi bi-collection-play"></i>
+                    Playlists
+                </a>
+            </div>
+            <div class="theme-switch-wrapper ms-auto">
+                <i class="bi bi-sun-fill theme-icon light-icon"></i>
+                <div class="form-check form-switch ms-2 me-2">
+                    <input class="form-check-input" type="checkbox" id="themeSwitch">
+                </div>
+                <i class="bi bi-moon-fill theme-icon dark-icon"></i>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="playlist-header">
+            <div class="row">
+                <div class="col-md-4">
+                    <img id="playlistThumbnail" class="playlist-thumbnail" src="" alt="Playlist thumbnail">
+                </div>
+                <div class="col-md-8">
+                    <div class="playlist-info">
+                        <h2 id="playlistTitle"></h2>
+                        <div class="playlist-stats">
+                            <span id="videoCount"></span> videos • Created by <span id="creatorName"></span>
+                        </div>
+                        <p id="playlistDescription" class="playlist-description"></p>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary" id="playAllBtn">
+                                <i class="bi bi-play-fill"></i> Play All
+                            </button>
+                            <button class="btn btn-outline-primary" id="shuffleBtn">
+                                <i class="bi bi-shuffle"></i> Shuffle
+                            </button>
+                            <button class="btn btn-outline-danger" id="deletePlaylistBtn">
+                                <i class="bi bi-trash"></i> Delete Playlist
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="videosList">
+            <!-- Videos will be loaded here -->
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getDatabase, ref, get, remove, set } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD33YiLLyTxlIycnHcArDKbgxvK_se27eA",
+            authDomain: "studyflow-6ed25.firebaseapp.com",
+            databaseURL: "https://studyflow-6ed25-default-rtdb.firebaseio.com",
+            projectId: "studyflow-6ed25",
+            storageBucket: "studyflow-6ed25.firebasestorage.app",
+            messagingSenderId: "562903369542",
+            appId: "1:562903369542:web:3f80ceb14d749870fc0747",
+            measurementId: "G-TD7DS8YKSB"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+        let currentUser = null;
+        let currentPlaylist = null;
+
+        // Get playlist ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const playlistId = urlParams.get('id');
+
+        if (!playlistId) {
+            window.location.href = 'playlists.html';
+        }
+
+        // Authentication state change handler
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                await loadPlaylist();
+                initTheme();
+            } else {
+                window.location.href = 'signin.html';
+            }
+        });
+
+        async function loadPlaylist() {
+            try {
+                const playlistRef = ref(db, `users/${currentUser.uid}/playlists/${playlistId}`);
+                const snapshot = await get(playlistRef);
+                currentPlaylist = snapshot.val();
+
+                if (!currentPlaylist) {
+                    window.location.href = 'playlists.html';
+                    return;
+                }
+
+                // Update UI with playlist details
+                document.title = `${currentPlaylist.name} - Study Flow`;
+                document.getElementById('playlistTitle').textContent = currentPlaylist.name;
+                document.getElementById('playlistDescription').textContent = currentPlaylist.description || 'No description';
+                document.getElementById('videoCount').textContent = currentPlaylist.videos?.length || 0;
+                document.getElementById('creatorName').textContent = currentUser.displayName || 'You';
+
+                // Set playlist thumbnail (using first video thumbnail or default)
+                const thumbnailUrl = currentPlaylist.videos?.[0]?.snippet?.thumbnails?.medium?.url || 
+                                   'https://via.placeholder.com/320x180?text=No+Videos';
+                document.getElementById('playlistThumbnail').src = thumbnailUrl;
+
+                displayVideos();
+            } catch (error) {
+                console.error('Error loading playlist:', error);
+                alert('Failed to load playlist');
+            }
+        }
+
+        function displayVideos() {
+            const videosList = document.getElementById('videosList');
+            
+            if (!currentPlaylist.videos || currentPlaylist.videos.length === 0) {
+                videosList.innerHTML = `
+                    <div class="empty-playlist">
+                        <i class="bi bi-collection-play display-4 mb-3"></i>
+                        <h3>This playlist is empty</h3>
+                        <p>Add videos to get started</p>
+                        <a href="index.html" class="btn btn-primary">
+                            <i class="bi bi-search me-2"></i>Browse Videos
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            videosList.innerHTML = currentPlaylist.videos.map((video, index) => `
+                <div class="video-item" draggable="true" data-video-id="${video.id.videoId}">
+                    <div class="drag-handle">
+                        <i class="bi bi-grip-vertical"></i>
+                    </div>
+                    <img src="${video.snippet.thumbnails.medium.url}" 
+                         alt="${video.snippet.title}" 
+                         class="video-thumbnail">
+                    <div class="video-details">
+                        <h5 class="video-title">${video.snippet.title}</h5>
+                        <div class="video-channel">${video.snippet.channelTitle}</div>
+                    </div>
+                    <div class="video-actions">
+                        <button class="btn btn-sm btn-primary" onclick="playVideo('${video.id.videoId}')">
+                            <i class="bi bi-play-fill"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="removeVideo('${video.id.videoId}')">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            initDragAndDrop();
+        }
+
+        // Play all functionality
+        document.getElementById('playAllBtn').addEventListener('click', () => {
+            if (currentPlaylist.videos?.length > 0) {
+                playVideo(currentPlaylist.videos[0].id.videoId);
+            }
+        });
+
+        // Shuffle functionality
+        document.getElementById('shuffleBtn').addEventListener('click', () => {
+            if (currentPlaylist.videos?.length > 0) {
+                const randomIndex = Math.floor(Math.random() * currentPlaylist.videos.length);
+                playVideo(currentPlaylist.videos[randomIndex].id.videoId);
+            }
+        });
+
+        // Delete playlist
+        document.getElementById('deletePlaylistBtn').addEventListener('click', async () => {
+            if (confirm('Are you sure you want to delete this playlist?')) {
+                try {
+                    await remove(ref(db, `users/${currentUser.uid}/playlists/${playlistId}`));
+                    window.location.href = 'playlists.html';
+                } catch (error) {
+                    console.error('Error deleting playlist:', error);
+                    alert('Failed to delete playlist');
+                }
+            }
+        });
+
+        // Make functions globally available
+        window.playVideo = (videoId) => {
+            window.location.href = `player.html?v=${videoId}`;
+        };
+
+        window.removeVideo = async (videoId) => {
+            if (!confirm('Remove this video from the playlist?')) return;
+
+            try {
+                currentPlaylist.videos = currentPlaylist.videos.filter(v => v.id.videoId !== videoId);
+                await set(ref(db, `users/${currentUser.uid}/playlists/${playlistId}`), currentPlaylist);
+                displayVideos();
+            } catch (error) {
+                console.error('Error removing video:', error);
+                alert('Failed to remove video');
+            }
+        };
+
+        // Drag and drop functionality
+        function initDragAndDrop() {
+            const videoItems = document.querySelectorAll('.video-item');
+            
+            videoItems.forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragend', handleDragEnd);
+                item.addEventListener('dragover', handleDragOver);
+                item.addEventListener('drop', handleDrop);
+            });
+        }
+
+        function handleDragStart(e) {
+            e.target.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', e.target.dataset.videoId);
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+            document.querySelectorAll('.video-item').forEach(item => {
+                item.classList.remove('drag-over');
+            });
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.target.closest('.video-item').classList.add('drag-over');
+        }
+
+        async function handleDrop(e) {
+            e.preventDefault();
+            const draggedVideoId = e.dataTransfer.getData('text/plain');
+            const dropTarget = e.target.closest('.video-item');
+            
+            if (draggedVideoId && dropTarget) {
+                const newOrder = Array.from(document.querySelectorAll('.video-item'))
+                    .map(item => item.dataset.videoId);
+                
+                const draggedIndex = newOrder.indexOf(draggedVideoId);
+                const dropIndex = newOrder.indexOf(dropTarget.dataset.videoId);
+                
+                // Reorder the array
+                const [removed] = newOrder.splice(draggedIndex, 1);
+                newOrder.splice(dropIndex, 0, removed);
+                
+                // Update playlist with new order
+                currentPlaylist.videos = newOrder.map(videoId => 
+                    currentPlaylist.videos.find(v => v.id.videoId === videoId)
+                );
+                
+                try {
+                    await set(ref(db, `users/${currentUser.uid}/playlists/${playlistId}`), currentPlaylist);
+                    displayVideos();
+                } catch (error) {
+                    console.error('Error updating video order:', error);
+                    alert('Failed to update video order');
+                }
+            }
+        }
+
+        // Theme functionality
+        async function initTheme() {
+            try {
+                const settingsRef = ref(db, `users/${currentUser.uid}/settings`);
+                const snapshot = await get(settingsRef);
+                const settings = snapshot.val() || {};
+                const theme = settings.theme || 'light';
+                
+                document.documentElement.setAttribute('data-bs-theme', theme);
+                document.getElementById('themeSwitch').checked = theme === 'dark';
+            } catch (error) {
+                console.error('Error initializing theme:', error);
+            }
+        }
+
+        document.getElementById('themeSwitch').addEventListener('change', async (e) => {
+            const newTheme = e.target.checked ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-bs-theme', newTheme);
+            
+            try {
+                const settingsRef = ref(db, `users/${currentUser.uid}/settings`);
+                const snapshot = await get(settingsRef);
+                const settings = snapshot.val() || {};
+                settings.theme = newTheme;
+                await set(settingsRef, settings);
+            } catch (error) {
+                console.error('Error saving theme:', error);
+            }
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

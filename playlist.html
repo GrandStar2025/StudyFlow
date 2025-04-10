@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Flow - Playlist</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .playlist-header {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .playlist-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 10px;
+        }
+
+        .playlist-description {
+            color: var(--text-muted);
+            margin-bottom: 15px;
+        }
+
+        .playlist-meta {
+            display: flex;
+            gap: 20px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .video-item {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s ease;
+        }
+
+        .video-item:hover {
+            transform: translateX(5px);
+        }
+
+        .video-thumbnail {
+            width: 160px;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .video-info {
+            flex: 1;
+        }
+
+        .video-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-color);
+            margin-bottom: 5px;
+        }
+
+        .video-meta {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .video-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: var(--text-color);
+        }
+
+        .empty-state p {
+            margin-bottom: 20px;
+        }
+
+        .drag-handle {
+            cursor: move;
+            color: var(--text-muted);
+            padding: 5px;
+        }
+
+        .drag-handle:hover {
+            color: var(--text-color);
+        }
+
+        .video-item.dragging {
+            opacity: 0.5;
+            background: var(--hover-bg);
+        }
+
+        .video-item.drag-over {
+            border: 2px dashed var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="bi bi-book-half me-2"></i>Study Flow
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">
+                            <i class="bi bi-house-door me-1"></i>Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="historyTab">
+                            <i class="bi bi-clock-history me-1"></i>Watch History
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="playlists.html">
+                            <i class="bi bi-collection-play me-1"></i>Playlists
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="communityLink">
+                            <i class="bi bi-people-fill me-1"></i>Community
+                        </a>
+                    </li>
+                </ul>
+                <div class="theme-switch-wrapper me-3">
+                    <i class="bi bi-sun-fill theme-icon light-icon"></i>
+                    <div class="form-check form-switch ms-2 me-2">
+                        <input class="form-check-input" type="checkbox" id="themeSwitch">
+                    </div>
+                    <i class="bi bi-moon-fill theme-icon dark-icon"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div id="playlistHeader" class="playlist-header">
+            <!-- Playlist header will be displayed here -->
+        </div>
+
+        <div id="videosContainer">
+            <!-- Videos will be displayed here -->
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getDatabase, ref, get, set, remove } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD33YiLLyTxlIycnHcArDKbgxvK_se27eA",
+            authDomain: "studyflow-6ed25.firebaseapp.com",
+            databaseURL: "https://studyflow-6ed25-default-rtdb.firebaseio.com",
+            projectId: "studyflow-6ed25",
+            storageBucket: "studyflow-6ed25.firebasestorage.app",
+            messagingSenderId: "562903369542",
+            appId: "1:562903369542:web:3f80ceb14d749870fc0747",
+            measurementId: "G-TD7DS8YKSB"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+        let currentUser = null;
+        let currentPlaylist = null;
+
+        // Theme switching functionality
+        const themeSwitch = document.getElementById('themeSwitch');
+
+        async function initTheme() {
+            if (!currentUser) return;
+            
+            try {
+                const settingsRef = ref(db, `users/${currentUser.uid}/settings`);
+                const snapshot = await get(settingsRef);
+                const settings = snapshot.val() || {};
+                const theme = settings.theme || 'light';
+                
+                document.documentElement.setAttribute('data-bs-theme', theme);
+                themeSwitch.checked = theme === 'dark';
+            } catch (error) {
+                console.error('Error initializing theme:', error);
+                document.documentElement.setAttribute('data-bs-theme', 'light');
+                themeSwitch.checked = false;
+            }
+        }
+
+        async function toggleTheme() {
+            if (!currentUser) return;
+            
+            try {
+                const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                
+                document.documentElement.setAttribute('data-bs-theme', newTheme);
+                
+                const settingsRef = ref(db, `users/${currentUser.uid}/settings`);
+                const snapshot = await get(settingsRef);
+                const settings = snapshot.val() || {};
+                settings.theme = newTheme;
+                await set(settingsRef, settings);
+            } catch (error) {
+                console.error('Error toggling theme:', error);
+            }
+        }
+
+        themeSwitch.addEventListener('change', toggleTheme);
+
+        // Get playlist ID from URL
+        function getPlaylistId() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('id');
+        }
+
+        // Playlist Functions
+        async function getPlaylist(playlistId) {
+            if (!currentUser) return null;
+            
+            try {
+                const playlistRef = ref(db, `users/${currentUser.uid}/playlists/${playlistId}`);
+                const snapshot = await get(playlistRef);
+                return snapshot.val();
+            } catch (error) {
+                console.error('Error getting playlist:', error);
+                throw error;
+            }
+        }
+
+        async function updatePlaylist(playlistId, updates) {
+            if (!currentUser) return;
+            
+            try {
+                const playlistRef = ref(db, `users/${currentUser.uid}/playlists/${playlistId}`);
+                const snapshot = await get(playlistRef);
+                const playlist = snapshot.val();
+                
+                if (playlist) {
+                    const updatedPlaylist = {
+                        ...playlist,
+                        ...updates,
+                        updatedAt: new Date().toISOString()
+                    };
+                    
+                    await set(playlistRef, updatedPlaylist);
+                    return updatedPlaylist;
+                }
+            } catch (error) {
+                console.error('Error updating playlist:', error);
+                throw error;
+            }
+        }
+
+        async function addVideoToPlaylist(playlistId, video) {
+            if (!currentUser) return;
+            
+            try {
+                const playlistRef = ref(db, `users/${currentUser.uid}/playlists/${playlistId}`);
+                const snapshot = await get(playlistRef);
+                const playlist = snapshot.val();
+                
+                if (playlist) {
+                    // Check if video already exists in playlist
+                    const videoExists = playlist.videos.some(v => v.id.videoId === video.id.videoId);
+                    
+                    if (!videoExists) {
+                        playlist.videos.push({
+                            ...video,
+                            addedAt: new Date().toISOString()
+                        });
+                        
+                        playlist.updatedAt = new Date().toISOString();
+                        await set(playlistRef, playlist);
+                    }
+                    
+                    return playlist;
+                }
+            } catch (error) {
+                console.error('Error adding video to playlist:', error);
+                throw error;
+            }
+        }
+
+        async function removeVideoFromPlaylist(playlistId, videoId) {
+            if (!currentUser) return;
+            
+            try {
+                const playlistRef = ref(db, `users/${currentUser.uid}/playlists/${playlistId}`);
+                const snapshot = await get(playlistRef);
+                const playlist = snapshot.val();
+                
+                if (playlist) {
+                    playlist.videos = playlist.videos.filter(v => v.id.videoId !== videoId);
+                    playlist.updatedAt = new Date().toISOString();
+                    await set(playlistRef, playlist);
+                    return playlist;
+                }
+            } catch (error) {
+                console.error('Error removing video from playlist:', error);
+                throw error;
+            }
+        }
+
+        async function reorderPlaylistVideos(playlistId, newOrder) {
+            if (!currentUser) return;
+            
+            try {
+                const playlistRef = ref(db, `users/${currentUser.uid}/playlists/${playlistId}`);
+                const snapshot = await get(playlistRef);
+                const playlist = snapshot.val();
+                
+                if (playlist) {
+                    // Reorder videos based on new order
+                    const reorderedVideos = newOrder.map(id => 
+                        playlist.videos.find(v => v.id.videoId === id)
+                    );
+                    
+                    playlist.videos = reorderedVideos;
+                    playlist.updatedAt = new Date().toISOString();
+                    await set(playlistRef, playlist);
+                    return playlist;
+                }
+            } catch (error) {
+                console.error('Error reordering playlist videos:', error);
+                throw error;
+            }
+        }
+
+        function displayPlaylistHeader(playlist) {
+            const header = document.getElementById('playlistHeader');
+            
+            header.innerHTML = `
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h1 class="playlist-title">${playlist.name}</h1>
+                        <p class="playlist-description">${playlist.description || 'No description'}</p>
+                        <div class="playlist-meta">
+                            <span><i class="bi bi-person me-1"></i>${currentUser.displayName}</span>
+                            <span><i class="bi bi-collection-play me-1"></i>${playlist.videos.length} videos</span>
+                            <span><i class="bi bi-clock me-1"></i>Created ${new Date(playlist.createdAt).toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary" onclick="editPlaylist()">
+                            <i class="bi bi-pencil me-2"></i>Edit
+                        </button>
+                        <button class="btn btn-outline-danger" onclick="deletePlaylist()">
+                            <i class="bi bi-trash me-2"></i>Delete
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function displayVideos(playlist) {
+            const container = document.getElementById('videosContainer');
+            
+            if (!playlist.videos || playlist.videos.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-collection-play"></i>
+                        <h3>No Videos Yet</h3>
+                        <p>Add videos to your playlist to get started</p>
+                        <a href="index.html" class="btn btn-primary">
+                            <i class="bi bi-search me-2"></i>Search Videos
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = playlist.videos.map((video, index) => `
+                <div class="video-item" data-video-id="${video.id.videoId}" draggable="true">
+                    <div class="d-flex">
+                        <div class="drag-handle me-2 d-flex align-items-center">
+                            <i class="bi bi-grip-vertical"></i>
+                        </div>
+                        <img src="${video.snippet.thumbnails.default.url}" 
+                             alt="${video.snippet.title}" 
+                             class="video-thumbnail me-3">
+                        <div class="video-info">
+                            <h3 class="video-title">${video.snippet.title}</h3>
+                            <div class="video-meta">
+                                <span>${video.snippet.channelTitle}</span>
+                                <span class="mx-2">•</span>
+                                <span>Added ${new Date(video.addedAt).toLocaleDateString()}</span>
+                            </div>
+                            <div class="video-actions">
+                                <a href="player.html?id=${video.id.videoId}" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-play-fill me-1"></i>Play
+                                </a>
+                                <button class="btn btn-sm btn-danger" onclick="removeVideo('${video.id.videoId}')">
+                                    <i class="bi bi-trash me-1"></i>Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Initialize drag and drop
+            initDragAndDrop();
+        }
+
+        function initDragAndDrop() {
+            const videoItems = document.querySelectorAll('.video-item');
+            
+            videoItems.forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragend', handleDragEnd);
+                item.addEventListener('dragover', handleDragOver);
+                item.addEventListener('drop', handleDrop);
+            });
+        }
+
+        function handleDragStart(e) {
+            e.target.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', e.target.dataset.videoId);
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+            document.querySelectorAll('.video-item').forEach(item => {
+                item.classList.remove('drag-over');
+            });
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            const draggingItem = document.querySelector('.dragging');
+            if (draggingItem !== e.target) {
+                e.target.classList.add('drag-over');
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const draggingItem = document.querySelector('.dragging');
+            const dropTarget = e.target.closest('.video-item');
+            
+            if (draggingItem && dropTarget && draggingItem !== dropTarget) {
+                const videoId = e.dataTransfer.getData('text/plain');
+                const newOrder = Array.from(document.querySelectorAll('.video-item'))
+                    .map(item => item.dataset.videoId);
+                
+                // Update playlist order in Firebase
+                reorderPlaylistVideos(getPlaylistId(), newOrder)
+                    .then(playlist => {
+                        displayVideos(playlist);
+                    })
+                    .catch(error => {
+                        console.error('Error reordering videos:', error);
+                        alert('Failed to reorder videos. Please try again.');
+                    });
+            }
+            
+            dropTarget.classList.remove('drag-over');
+        }
+
+        // Make functions globally available
+        window.editPlaylist = async () => {
+            if (!currentPlaylist) return;
+            
+            const newName = prompt('Enter new playlist name:', currentPlaylist.name);
+            if (!newName) return;
+            
+            const newDescription = prompt('Enter new playlist description:', currentPlaylist.description);
+            
+            try {
+                const updatedPlaylist = await updatePlaylist(currentPlaylist.id, {
+                    name: newName,
+                    description: newDescription
+                });
+                
+                currentPlaylist = updatedPlaylist;
+                displayPlaylistHeader(updatedPlaylist);
+            } catch (error) {
+                console.error('Error updating playlist:', error);
+                alert('Failed to update playlist. Please try again.');
+            }
+        };
+
+        window.deletePlaylist = async () => {
+            if (!currentPlaylist) return;
+            
+            if (confirm('Are you sure you want to delete this playlist?')) {
+                try {
+                    const playlistRef = ref(db, `users/${currentUser.uid}/playlists/${currentPlaylist.id}`);
+                    await remove(playlistRef);
+                    window.location.href = 'playlists.html';
+                } catch (error) {
+                    console.error('Error deleting playlist:', error);
+                    alert('Failed to delete playlist. Please try again.');
+                }
+            }
+        };
+
+        window.removeVideo = async (videoId) => {
+            if (!currentPlaylist) return;
+            
+            if (confirm('Are you sure you want to remove this video from the playlist?')) {
+                try {
+                    const updatedPlaylist = await removeVideoFromPlaylist(currentPlaylist.id, videoId);
+                    currentPlaylist = updatedPlaylist;
+                    displayVideos(updatedPlaylist);
+                    displayPlaylistHeader(updatedPlaylist);
+                } catch (error) {
+                    console.error('Error removing video:', error);
+                    alert('Failed to remove video. Please try again.');
+                }
+            }
+        };
+
+        // Authentication state change handler
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                await initTheme();
+                
+                const playlistId = getPlaylistId();
+                if (playlistId) {
+                    try {
+                        const playlist = await getPlaylist(playlistId);
+                        if (playlist) {
+                            currentPlaylist = playlist;
+                            displayPlaylistHeader(playlist);
+                            displayVideos(playlist);
+                        } else {
+                            window.location.href = 'playlists.html';
+                        }
+                    } catch (error) {
+                        console.error('Error loading playlist:', error);
+                        window.location.href = 'playlists.html';
+                    }
+                } else {
+                    window.location.href = 'playlists.html';
+                }
+            } else {
+                window.location.href = 'signin.html';
+            }
+        });
+    </script>
+    <script type="module" src="themeManager.js"></script>
+</body>
+</html> 

@@ -338,20 +338,40 @@ function deleteFromWatchHistory(index) {
 
 // Theme switching functionality
 function initTheme() {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    document.documentElement.setAttribute('data-bs-theme', savedTheme);
-    themeSwitch.checked = savedTheme === 'dark';
+    if (window.ThemeManager) {
+        const themeSettings = window.ThemeManager.getLocalTheme();
+        window.ThemeManager.applyTheme(themeSettings);
+    } else {
+        // Fallback if ThemeManager is not available
+        const savedTheme = localStorage.getItem('themeSettings');
+        const themeMode = savedTheme ? JSON.parse(savedTheme).theme : 'light';
+        document.documentElement.setAttribute('data-bs-theme', themeMode);
+        if (themeSwitch) {
+            themeSwitch.checked = themeMode === 'dark';
+        }
+    }
 }
 
 function toggleTheme() {
-    const currentTheme = document.documentElement.getAttribute('data-bs-theme');
-    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-    
-    document.documentElement.setAttribute('data-bs-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
+    if (window.ThemeManager) {
+        const themeSettings = window.ThemeManager.getLocalTheme();
+        themeSettings.theme = themeSettings.theme === 'light' ? 'dark' : 'light';
+        window.ThemeManager.saveTheme(themeSettings);
+    } else {
+        // Fallback if ThemeManager is not available
+        const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-bs-theme', newTheme);
+        localStorage.setItem('themeSettings', JSON.stringify({theme: newTheme, primaryColor: '#4361ee'}));
+    }
 }
 
-themeSwitch.addEventListener('change', toggleTheme);
+if (themeSwitch) {
+    themeSwitch.addEventListener('change', toggleTheme);
+}
 
-// Add this line to the end of the file, just before loadYouTubeAPI()
-initTheme(); 
+// Initialize theme immediately
+initTheme();
+
+// Also initialize when DOM is fully loaded (fallback)
+document.addEventListener('DOMContentLoaded', initTheme); 

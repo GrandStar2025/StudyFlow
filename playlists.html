@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Flow - Playlists</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .playlist-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.2s ease;
+            border: 1px solid var(--border-color);
+        }
+
+        .playlist-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .playlist-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .playlist-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin: 0;
+        }
+
+        .playlist-stats {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .playlist-thumbnails {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .playlist-thumbnail {
+            width: 120px;
+            height: 67.5px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .playlist-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .create-playlist-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .create-playlist-btn:hover {
+            background: var(--primary-hover-color);
+            transform: translateY(-2px);
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-footer {
+            border-top: 1px solid var(--border-color);
+        }
+
+        .form-control {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+        }
+
+        .form-control:focus {
+            background: var(--input-bg);
+            border-color: var(--primary-color);
+            color: var(--text-color);
+            box-shadow: 0 0 0 0.2rem rgba(var(--primary-rgb), 0.25);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: var(--text-color);
+        }
+
+        .empty-state p {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="bi bi-book-half me-2"></i>Study Flow
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">
+                            <i class="bi bi-house-door me-1"></i>Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="historyTab">
+                            <i class="bi bi-clock-history me-1"></i>Watch History
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="playlists.html">
+                            <i class="bi bi-collection-play me-1"></i>Playlists
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="communityLink">
+                            <i class="bi bi-people-fill me-1"></i>Community
+                        </a>
+                    </li>
+                </ul>
+                <div class="theme-switch-wrapper me-3">
+                    <i class="bi bi-sun-fill theme-icon light-icon"></i>
+                    <div class="form-check form-switch ms-2 me-2">
+                        <input class="form-check-input" type="checkbox" id="themeSwitch">
+                    </div>
+                    <i class="bi bi-moon-fill theme-icon dark-icon"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="section-title">
+                <i class="bi bi-collection-play me-2"></i>My Playlists
+            </h2>
+            <button class="btn create-playlist-btn" data-bs-toggle="modal" data-bs-target="#createPlaylistModal">
+                <i class="bi bi-plus-lg me-2"></i>Create New Playlist
+            </button>
+        </div>
+
+        <div id="playlistsContainer">
+            <!-- Playlists will be displayed here -->
+        </div>
+    </div>
+
+    <!-- Create Playlist Modal -->
+    <div class="modal fade" id="createPlaylistModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Playlist</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createPlaylistForm">
+                        <div class="mb-3">
+                            <label for="playlistName" class="form-label">Playlist Name</label>
+                            <input type="text" class="form-control" id="playlistName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="playlistDescription" class="form-label">Description (Optional)</label>
+                            <textarea class="form-control" id="playlistDescription" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="isPrivate">
+                                <label class="form-check-label" for="isPrivate">
+                                    Make this playlist private
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="createPlaylistBtn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                        Create Playlist
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getDatabase, ref, set, get, remove } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD33YiLLyTxlIycnHcArDKbgxvK_se27eA",
+            authDomain: "studyflow-6ed25.firebaseapp.com",
+            databaseURL: "https://studyflow-6ed25-default-rtdb.firebaseio.com",
+            projectId: "studyflow-6ed25",
+            storageBucket: "studyflow-6ed25.firebasestorage.app",
+            messagingSenderId: "562903369542",
+            appId: "1:562903369542:web:3f80ceb14d749870fc0747",
+            measurementId: "G-TD7DS8YKSB"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+        let currentUser = null;
+        let playlists = {};
+
+        // Theme switching functionality
+        const themeSwitch = document.getElementById('themeSwitch');
+
+        async function initTheme() {
+            if (!currentUser) return;
+            
+            try {
+                const settingsRef = ref(db, `users/${currentUser.uid}/settings`);
+                const snapshot = await get(settingsRef);
+                const settings = snapshot.val() || {};
+                const theme = settings.theme || 'light';
+                
+                document.documentElement.setAttribute('data-bs-theme', theme);
+                themeSwitch.checked = theme === 'dark';
+            } catch (error) {
+                console.error('Error initializing theme:', error);
+                document.documentElement.setAttribute('data-bs-theme', 'light');
+                themeSwitch.checked = false;
+            }
+        }
+
+        async function toggleTheme() {
+            if (!currentUser) return;
+            
+            try {
+                const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                
+                document.documentElement.setAttribute('data-bs-theme', newTheme);
+                
+                const settingsRef = ref(db, `users/${currentUser.uid}/settings`);
+                const snapshot = await get(settingsRef);
+                const settings = snapshot.val() || {};
+                settings.theme = newTheme;
+                await set(settingsRef, settings);
+            } catch (error) {
+                console.error('Error toggling theme:', error);
+            }
+        }
+
+        themeSwitch.addEventListener('change', toggleTheme);
+
+        // Playlist Functions
+        async function createPlaylist(name, description, isPrivate) {
+            console.log('Creating playlist with:', { name, description, isPrivate });
+            console.log('Current user:', currentUser);
+            
+            if (!currentUser) {
+                throw new Error('User not authenticated');
+            }
+
+            try {
+                const playlistId = 'playlist_' + Date.now();
+                console.log('Generated playlist ID:', playlistId);
+                
+                const playlistRef = ref(db, `users/${currentUser.uid}/playlists/${playlistId}`);
+                console.log('Playlist reference:', playlistRef);
+                
+                const playlistData = {
+                    id: playlistId,
+                    name: name,
+                    description: description,
+                    isPrivate: isPrivate,
+                    videos: [],
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                };
+                console.log('Playlist data:', playlistData);
+
+                await set(playlistRef, playlistData);
+                console.log('Playlist saved to database');
+                return playlistData;
+            } catch (error) {
+                console.error('Error creating playlist:', error);
+                throw new Error('Failed to create playlist: ' + error.message);
+            }
+        }
+
+        async function getPlaylists() {
+            if (!currentUser) return [];
+            
+            try {
+                const playlistsRef = ref(db, `users/${currentUser.uid}/playlists`);
+                const snapshot = await get(playlistsRef);
+                return snapshot.val() || {};
+            } catch (error) {
+                console.error('Error getting playlists:', error);
+                throw error;
+            }
+        }
+
+        async function deletePlaylist(playlistId) {
+            if (!currentUser) return;
+            
+            try {
+                const playlistRef = ref(db, `users/${currentUser.uid}/playlists/${playlistId}`);
+                await remove(playlistRef);
+            } catch (error) {
+                console.error('Error deleting playlist:', error);
+                throw error;
+            }
+        }
+
+        function displayPlaylists() {
+            const container = document.getElementById('playlistsContainer');
+            
+            if (!playlists || Object.keys(playlists).length === 0) {
+                container.innerHTML = `
+                    <div class="text-center">
+                        <i class="bi bi-collection-play display-4 mb-3"></i>
+                        <h3>No Playlists Yet</h3>
+                        <p>Create your first playlist to get started</p>
+                        <button class="btn btn-primary" onclick="showCreatePlaylistModal()">
+                            <i class="bi bi-plus-lg me-2"></i>Create Playlist
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="row">
+                    ${Object.values(playlists).map(playlist => `
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                <a href="playlist-view.html?id=${playlist.id}" class="text-decoration-none">
+                                    <img src="${playlist.videos?.[0]?.snippet?.thumbnails?.medium?.url || 'https://via.placeholder.com/320x180?text=No+Videos'}" 
+                                         class="card-img-top" alt="${playlist.name}">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-truncate">${playlist.name}</h5>
+                                        <p class="card-text text-muted">
+                                            ${playlist.videos?.length || 0} videos
+                                            ${playlist.isPrivate ? '<i class="bi bi-lock-fill ms-2"></i>' : ''}
+                                        </p>
+                                        <p class="card-text small text-truncate">${playlist.description || 'No description'}</p>
+                                    </div>
+                                </a>
+                                <div class="card-footer bg-transparent border-top-0">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <button class="btn btn-sm btn-primary" onclick="playPlaylist('${playlist.id}')">
+                                            <i class="bi bi-play-fill"></i> Play All
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deletePlaylist('${playlist.id}')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Event Listeners
+        document.getElementById('createPlaylistBtn').addEventListener('click', async () => {
+            const name = document.getElementById('playlistName').value.trim();
+            const description = document.getElementById('playlistDescription').value.trim();
+            const isPrivate = document.getElementById('isPrivate').checked;
+            const button = document.getElementById('createPlaylistBtn');
+            const spinner = button.querySelector('.spinner-border');
+            
+            if (!name) {
+                alert('Please enter a playlist name');
+                return;
+            }
+            
+            try {
+                button.disabled = true;
+                spinner.classList.remove('d-none');
+                button.textContent = 'Creating...';
+                
+                const playlist = await createPlaylist(name, description, isPrivate);
+                console.log('Playlist created:', playlist);
+                
+                // Update the playlists object
+                playlists[playlist.id] = playlist;
+                
+                // Reset form and close modal
+                document.getElementById('createPlaylistForm').reset();
+                const modal = bootstrap.Modal.getInstance(document.getElementById('createPlaylistModal'));
+                modal.hide();
+                
+                // Refresh playlists display
+                displayPlaylists();
+                
+                alert('Playlist created successfully!');
+            } catch (error) {
+                console.error('Error creating playlist:', error);
+                alert(error.message || 'Failed to create playlist');
+            } finally {
+                button.disabled = false;
+                spinner.classList.add('d-none');
+                button.textContent = 'Create Playlist';
+            }
+        });
+
+        // Make showCreatePlaylistModal function globally available
+        window.showCreatePlaylistModal = () => {
+            const modal = new bootstrap.Modal(document.getElementById('createPlaylistModal'));
+            modal.show();
+        };
+
+        // Make deletePlaylist function globally available
+        window.deletePlaylist = async (playlistId) => {
+            if (confirm('Are you sure you want to delete this playlist?')) {
+                try {
+                    await deletePlaylist(playlistId);
+                    // Remove the playlist from the local playlists object
+                    delete playlists[playlistId];
+                    displayPlaylists();
+                } catch (error) {
+                    console.error('Error deleting playlist:', error);
+                    alert('Failed to delete playlist. Please try again.');
+                }
+            }
+        };
+
+        // Authentication state change handler
+        onAuthStateChanged(auth, async (user) => {
+            console.log('Auth state changed:', user);
+            if (user) {
+                currentUser = user;
+                console.log('User authenticated:', user.uid);
+                await initTheme();
+                
+                try {
+                    playlists = await getPlaylists();
+                    console.log('Loaded playlists:', playlists);
+                    displayPlaylists();
+                } catch (error) {
+                    console.error('Error loading playlists:', error);
+                }
+            } else {
+                console.log('No user, redirecting to signin');
+                window.location.href = 'signin.html';
+            }
+        });
+
+        // Add playPlaylist function
+        window.playPlaylist = (playlistId) => {
+            const playlist = playlists[playlistId];
+            if (playlist?.videos?.length > 0) {
+                window.location.href = `player.html?v=${playlist.videos[0].id.videoId}`;
+            }
+        };
+    </script>
+    <script type="module" src="themeManager.js"></script>
+</body>
+</html> 

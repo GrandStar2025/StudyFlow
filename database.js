@@ -119,10 +119,22 @@ export async function deleteFromSearchHistory(userId, index) {
 export async function saveVideoProgress(userId, videoId, progress) {
     try {
         const progressRef = ref(db, `users/${userId}/videoProgress/${videoId}`);
-        await set(progressRef, {
+        const progressData = {
             ...progress,
-            lastUpdated: new Date().toISOString()
+            lastUpdated: new Date().toISOString(),
+            userId: userId,
+            videoId: videoId
+        };
+        
+        // Also update the last watched timestamp
+        const lastWatchedRef = ref(db, `users/${userId}/lastWatched/${videoId}`);
+        await set(lastWatchedRef, {
+            timestamp: new Date().toISOString(),
+            progress: progress.progress
         });
+        
+        await set(progressRef, progressData);
+        return progressData;
     } catch (error) {
         console.error('Error saving video progress:', error);
         throw error;
@@ -133,9 +145,54 @@ export async function getVideoProgress(userId, videoId) {
     try {
         const progressRef = ref(db, `users/${userId}/videoProgress/${videoId}`);
         const snapshot = await get(progressRef);
-        return snapshot.val();
+        const progress = snapshot.val();
+        
+        if (progress) {
+            // Check if the progress is from today
+            const lastUpdated = new Date(progress.lastUpdated);
+            const today = new Date();
+            if (lastUpdated.toDateString() === today.toDateString()) {
+                return progress;
+            }
+        }
+        return null;
     } catch (error) {
         console.error('Error getting video progress:', error);
+        throw error;
+    }
+}
+
+// Get all video progress for a user
+export async function getAllVideoProgress(userId) {
+    try {
+        const progressRef = ref(db, `users/${userId}/videoProgress`);
+        const snapshot = await get(progressRef);
+        return snapshot.val() || {};
+    } catch (error) {
+        console.error('Error getting all video progress:', error);
+        throw error;
+    }
+}
+
+// Get recently watched videos
+export async function getRecentlyWatched(userId, limit = 10) {
+    try {
+        const lastWatchedRef = ref(db, `users/${userId}/lastWatched`);
+        const snapshot = await get(lastWatchedRef);
+        const lastWatched = snapshot.val() || {};
+        
+        // Convert to array and sort by timestamp
+        const videos = Object.entries(lastWatched)
+            .map(([videoId, data]) => ({
+                videoId,
+                ...data
+            }))
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+            .slice(0, limit);
+            
+        return videos;
+    } catch (error) {
+        console.error('Error getting recently watched videos:', error);
         throw error;
     }
 }
@@ -308,4 +365,30 @@ export function setupRealtimeListeners(userId, callbacks) {
             callbacks.onWatchHistoryUpdate(watchHistory);
         }
     });
+}
+
+export async function createPlaylist(userId, name, description, isPrivate) {
+    try {
+        if (!userId) throw new Error('User ID is required');
+        if (!name) throw new Error('Playlist name is required');
+        
+        const playlistId = `playlist_${Date.now()}`;
+        const playlistRef = ref(db, `users/${userId}/playlists/${playlistId}`);
+        
+        const playlistData = {
+            id: playlistId,
+            name: name,
+            description: description || '',
+            isPrivate: isPrivate || false,
+            videos: [],
+            createdAt: Date.now(),
+            updatedAt: Date.now()
+        };
+        
+        await set(playlistRef, playlistData);
+        return playlistData;
+    } catch (error) {
+        console.error('Error creating playlist:', error);
+        throw new Error(error.message || 'Failed to create playlist');
+    }
 } 
