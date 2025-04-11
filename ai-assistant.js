@@ -5,8 +5,10 @@ class AIAssistant {
     constructor() {
         this.chatHistory = [];
         this.isTyping = false;
+        this.welcomeShown = false;
         this.initializeElements();
         this.attachEventListeners();
+        this.loadChatHistory(); // Load previous chat history
     }
 
     initializeElements() {
@@ -21,8 +23,9 @@ class AIAssistant {
     attachEventListeners() {
         if (this.btn) {
             this.btn.addEventListener('click', () => {
+                const wasClosed = !this.chat.classList.contains('active');
                 this.toggleChat();
-                if (this.chat.classList.contains('active')) {
+                if (wasClosed && !this.welcomeShown) {
                     this.showWelcomeMessage();
                 }
             });
@@ -68,9 +71,71 @@ class AIAssistant {
         }
     }
 
+    // Load chat history from localStorage
+    loadChatHistory() {
+        const savedHistory = localStorage.getItem('studyFlowChatHistory');
+        if (savedHistory) {
+            this.chatHistory = JSON.parse(savedHistory);
+        }
+    }
+
+    // Save chat history to localStorage
+    saveChatHistory() {
+        localStorage.setItem('studyFlowChatHistory', JSON.stringify(this.chatHistory));
+    }
+
     async getAIResponse(message) {
         try {
-            console.log('Sending request to Gemini API...');
+            // Store the message in chat history
+            this.chatHistory.push({ role: 'user', content: message });
+            this.saveChatHistory();
+
+            // Check for identity-related questions
+            const identityQuestions = [
+                'who are you',
+                'what are you',
+                'tum kon ho',
+                'aap kaun ho',
+                'what is your name',
+                'what can you do',
+                'who is you',
+                'are you google',
+                'are you chatgpt',
+                'are you ai',
+                'are you bot'
+            ];
+
+            const isIdentityQuestion = identityQuestions.some(question => 
+                message.toLowerCase().includes(question)
+            );
+
+            if (isIdentityQuestion) {
+                return "I'm Study Flow's assistant! I help with videos, playlists, and study resources. How can I help you?";
+            }
+
+            // Prepare context from entire chat history
+            const context = this.chatHistory.map(msg => 
+                `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`
+            ).join('\n');
+
+            // Create a more detailed prompt for better understanding
+            const prompt = `
+You are Study Flow's assistant. Always identify yourself as Study Flow's assistant when asked about your identity.
+
+Complete conversation history:
+${context}
+
+Current user message: "${message}"
+
+Please:
+1. Understand the user's intent and context from the entire conversation
+2. Reference previous messages if relevant
+3. Provide a concise, helpful response
+4. If the message is unclear, ask for clarification
+5. Keep the response under 150 characters
+6. Always identify yourself as Study Flow's assistant when asked about your identity
+`;
+
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
                 method: 'POST',
                 headers: {
@@ -79,46 +144,32 @@ class AIAssistant {
                 body: JSON.stringify({
                     contents: [{
                         parts: [{
-                            text: message
+                            text: prompt
                         }]
                     }]
                 })
             });
 
-            console.log('API Response Status:', response.status);
-            
             if (!response.ok) {
-                const errorData = await response.json();
-                console.error('API Error Response:', errorData);
-                throw new Error(`API Error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+                throw new Error('Failed to get response from AI');
             }
 
             const data = await response.json();
-            console.log('API Response Data:', data);
-            
-            if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
-                throw new Error('Invalid API response format');
-            }
+            let responseText = data.candidates[0].content.parts[0].text;
 
-            const responseText = data.candidates[0].content.parts[0].text;
-            if (!responseText) {
-                throw new Error('Empty response from API');
+            // Store the response in chat history
+            this.chatHistory.push({ role: 'assistant', content: responseText });
+            this.saveChatHistory();
+
+            // Ensure response is concise
+            if (responseText.length > 150) {
+                responseText = responseText.substring(0, 147) + '...';
             }
 
             return responseText;
         } catch (error) {
-            console.error('API Error:', error);
-            if (error.message.includes('Failed to fetch')) {
-                throw new Error('Network error. Please check your internet connection.');
-            } else if (error.message.includes('API Error: 400')) {
-                throw new Error('Invalid request. Please try again with a different message.');
-            } else if (error.message.includes('API Error: 403')) {
-                throw new Error('API key error. Please check your API key configuration.');
-            } else if (error.message.includes('API Error: 429')) {
-                throw new Error('Too many requests. Please try again later.');
-            } else {
-                throw error;
-            }
+            console.error('Error getting AI response:', error);
+            return "Sorry, I'm having trouble. Please try again.";
         }
     }
 
@@ -167,6 +218,8 @@ class AIAssistant {
     }
 
     showWelcomeMessage() {
+        if (this.welcomeShown) return;
+        
         const welcomeMessage = `
 <div class="welcome-message">
     <div class="welcome-header">
@@ -186,6 +239,15 @@ class AIAssistant {
 </div>
         `;
         this.addMessage(welcomeMessage, 'assistant');
+        this.welcomeShown = true;
+    }
+
+    // Add method to clear chat history
+    clearChatHistory() {
+        this.chatHistory = [];
+        localStorage.removeItem('studyFlowChatHistory');
+        this.messagesContainer.innerHTML = ''; // Clear the chat UI
+        this.showWelcomeMessage(); // Show welcome message again
     }
 }
 
