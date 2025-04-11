@@ -120,7 +120,7 @@ class AIAssistant {
 
             // Create a more detailed prompt for better understanding
             const prompt = `
-You are Study Flow's assistant. Always identify yourself as Study Flow's assistant when asked about your identity.
+You are Study Flow's assistant. Do not add any signatures or "Study Flow Assistant" at the end of your responses.
 
 Complete conversation history:
 ${context}
@@ -130,10 +130,9 @@ Current user message: "${message}"
 Please:
 1. Understand the user's intent and context from the entire conversation
 2. Reference previous messages if relevant
-3. Provide a concise, helpful response
+3. Provide a natural, helpful response
 4. If the message is unclear, ask for clarification
-5. Keep the response under 150 characters
-6. Always identify yourself as Study Flow's assistant when asked about your identity
+5. Do not add any signatures or "Study Flow Assistant" at the end of your responses
 `;
 
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
@@ -157,14 +156,15 @@ Please:
             const data = await response.json();
             let responseText = data.candidates[0].content.parts[0].text;
 
+            // Remove any "Study Flow Assistant" or similar signatures from the end of the response
+            responseText = responseText.replace(/\s*Study Flow Assistant\s*$/, '')
+                                     .replace(/\s*Assistant\s*$/, '')
+                                     .replace(/\s*AI Assistant\s*$/, '')
+                                     .trim();
+
             // Store the response in chat history
             this.chatHistory.push({ role: 'assistant', content: responseText });
             this.saveChatHistory();
-
-            // Ensure response is concise
-            if (responseText.length > 150) {
-                responseText = responseText.substring(0, 147) + '...';
-            }
 
             return responseText;
         } catch (error) {
